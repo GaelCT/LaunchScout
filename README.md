@@ -4,6 +4,8 @@ A privacy-first company discovery prototype for Bakersfield and nearby Central V
 
 **Demo status:** All 20 companies, descriptions, statistics, and opportunities are fictional. There are no verified listings, live job openings, real contacts, or source links in this dataset. Using fake data is intentional for this development phase; the real-data acceptance criteria in issues #1 and #2 remain outstanding.
 
+See [current project status](STATUS.md) for completed work, issue ownership, validation, and the remaining requirements for issues #1–#4.
+
 ## Run locally
 
 Requires Node.js 22.13 or newer.
