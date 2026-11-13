@@ -15,6 +15,11 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r public/tools/requirements.txt
+      - run: python -m unittest discover -s tests/python -v
       - run: npm run format:check
       - run: npm run build
       - run: npx playwright install --with-deps chromium

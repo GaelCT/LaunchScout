@@ -1,0 +1,2 @@
+# PDF support only. TXT, Markdown, and DOCX use Python's standard library.
+pypdf>=7.1.0,<8

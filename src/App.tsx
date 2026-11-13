@@ -9,6 +9,7 @@ import {
   Compass,
   Copy,
   ExternalLink,
+  FileText,
   Leaf,
   MapPin,
   Moon,
@@ -30,12 +31,12 @@ import { emptyFilters, emptyPreferences, loadPreferences, STORAGE_KEY } from './
 import type { Filters, Preferences } from './storage';
 import { Modal } from './Modal';
 import { useCardMotion } from './useCardMotion';
-type View = 'discover' | 'saved' | 'passed';
-type Decision = {
-  id: string;
-  wasSaved: boolean;
-  wasRejected: boolean;
-};
+import { ResumeWorkspace } from './ResumeWorkspace';
+import type { ResumeDocument } from './resume';
+
+type View = 'discover' | 'saved' | 'passed' | 'resume';
+type Decision = { id: string; wasSaved: boolean; wasRejected: boolean };
+
 function Brand({ small = false }: { small?: boolean }) {
   return (
     <span className={`brand ${small ? 'brand-small' : ''}`}>
@@ -46,6 +47,7 @@ function Brand({ small = false }: { small?: boolean }) {
     </span>
   );
 }
+
 function CompanyArt({ company, compact = false }: { company: Company; compact?: boolean }) {
   const ArtIcon =
     company.industry === 'AgTech'
@@ -76,6 +78,7 @@ function CompanyArt({ company, compact = false }: { company: Company; compact?: 
     </div>
   );
 }
+
 export default function App() {
   const [initial] = useState(loadPreferences);
   const [preferences, setPreferences] = useState<Preferences>(initial.preferences);
@@ -87,11 +90,15 @@ export default function App() {
   const [showFilters, setShowFilters] = useState(false);
   const [notice, setNotice] = useState('');
   const [undo, setUndo] = useState<Decision | null>(null);
+  const [resume, setResume] = useState<ResumeDocument | null>(null);
+  const [resumeEnabled, setResumeEnabled] = useState(false);
   const motion = useCardMotion();
   const { suppressClick } = motion;
+
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = preferences.theme;
   }, [preferences.theme]);
+
   useEffect(() => {
     try {
       if (
@@ -107,11 +114,13 @@ export default function App() {
       setStorageError(true);
     }
   }, [preferences]);
+
   useEffect(() => {
     if (!notice) return;
     const timeout = window.setTimeout(() => setNotice(''), 6000);
     return () => window.clearTimeout(timeout);
   }, [notice]);
+
   const filters = preferences.filters;
   const activeFilters = Object.values(filters).filter(Boolean).length;
   const filtered = companies.filter(
@@ -125,9 +134,11 @@ export default function App() {
   const current = filtered[0];
   const saved = companies.filter((company) => preferences.saved.includes(company.id));
   const passed = companies.filter((company) => preferences.rejected.includes(company.id));
+
   function setFilter(key: keyof Filters, value: string) {
     setPreferences((previous) => ({ ...previous, filters: { ...previous.filters, [key]: value } }));
   }
+
   function decide(company: Company, action: 'save' | 'reject') {
     if (view === 'discover' && current?.id === company.id && !detail) motion.depart(action);
     setUndo({
@@ -152,6 +163,7 @@ export default function App() {
         : `${company.name} passed. It won’t reappear in Discover.`,
     );
   }
+
   function undoDecision() {
     if (!undo) return;
     setPreferences((previous) => ({
@@ -168,6 +180,7 @@ export default function App() {
     setUndo(null);
     setNotice('Last action undone.');
   }
+
   function restore(company: Company) {
     setPreferences((previous) => ({
       ...previous,
@@ -177,7 +190,16 @@ export default function App() {
     setUndo(null);
     setNotice(`${company.name} returned to Discover.`);
   }
-  function clearData(type: 'saved' | 'rejected' | 'filters' | 'theme' | 'all') {
+
+  function clearData(type: 'saved' | 'rejected' | 'filters' | 'theme' | 'resume' | 'all') {
+    if (type === 'resume' || type === 'all') {
+      setResume(null);
+      setResumeEnabled(false);
+    }
+    if (type === 'resume') {
+      setNotice('Resume content and consent cleared from this session.');
+      return;
+    }
     setPreferences((previous) =>
       type === 'all'
         ? { ...emptyPreferences, filters: { ...emptyFilters } }
@@ -193,6 +215,7 @@ export default function App() {
         : `${type === 'rejected' ? 'Passed companies' : type === 'filters' ? 'Filter preferences' : type === 'theme' ? 'Appearance preference' : 'Saved companies'} cleared.`,
     );
   }
+
   function navItem(key: View, label: string, Icon: LucideIcon, count?: number) {
     return (
       <button
@@ -206,6 +229,7 @@ export default function App() {
       </button>
     );
   }
+
   const filterControls = (
     <>
       <FilterSelect
@@ -232,6 +256,7 @@ export default function App() {
       <p className="filter-note">Opportunity types are examples in this demo, not live openings.</p>
     </>
   );
+
   const themeToggle = (
     <button
       className="theme-toggle"
@@ -247,6 +272,7 @@ export default function App() {
       {preferences.theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
     </button>
   );
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -263,6 +289,7 @@ export default function App() {
           {navItem('discover', 'Discover', Compass)}
           {navItem('saved', 'Saved companies', Bookmark, saved.length)}
           {navItem('passed', 'Passed companies', X, passed.length)}
+          {navItem('resume', 'My resume', FileText)}
         </nav>
         <div className="sidebar-filters">
           <div className="section-label">
@@ -333,10 +360,14 @@ export default function App() {
             <div>
               <div className="eyebrow">
                 <span />
-                {'BAKERSFIELD & BEYOND'}
+                {view === 'resume' ? 'A LITTLE CLARITY. ALL YOU.' : 'BAKERSFIELD & BEYOND'}
               </div>
               <h1>
-                {view === 'discover' ? (
+                {view === 'resume' ? (
+                  <>
+                    Your story, <em>clearly told.</em>
+                  </>
+                ) : view === 'discover' ? (
                   <>
                     Big ideas.
                     <br className="mobile-break" /> Close to home<span>.</span>
@@ -352,11 +383,13 @@ export default function App() {
                 )}
               </h1>
               <p>
-                {view === 'discover'
-                  ? 'Meet the local companies building something worth being part of.'
-                  : view === 'saved'
-                    ? 'Your collection of possibilities. Come back when the time feels right.'
-                    : 'These companies stay out of Discover until you bring them back.'}
+                {view === 'resume'
+                  ? 'A thoughtful workspace for the experience that makes you, you.'
+                  : view === 'discover'
+                    ? 'Meet the local companies building something worth being part of.'
+                    : view === 'saved'
+                      ? 'Your collection of possibilities. Come back when the time feels right.'
+                      : 'These companies stay out of Discover until you bring them back.'}
               </p>
             </div>
             <div className="intro-stamp" aria-hidden="true">
@@ -369,7 +402,7 @@ export default function App() {
             </div>
           </section>
 
-          {
+          {view !== 'resume' && (
             <div className="content-heading">
               <div className="view-label">
                 <span className="live-dot" />
@@ -398,7 +431,7 @@ export default function App() {
               )}
               <span className="heading-note">A fresh perspective starts here.</span>
             </div>
-          }
+          )}
           {showFilters && view === 'discover' && (
             <div className="mobile-filters">{filterControls}</div>
           )}
@@ -419,7 +452,14 @@ export default function App() {
             </div>
           )}
 
-          {view === 'discover' ? (
+          {view === 'resume' ? (
+            <ResumeWorkspace
+              document={resume}
+              enabled={resumeEnabled}
+              onChange={setResume}
+              onEnabledChange={setResumeEnabled}
+            />
+          ) : view === 'discover' ? (
             <div className="discovery-layout">
               <section className="deck" aria-label="Company discovery deck">
                 {current ? (
@@ -699,6 +739,7 @@ export default function App() {
           {navItem('discover', 'Discover', Compass)}
           {navItem('saved', 'Saved', Bookmark, saved.length)}
           {navItem('passed', 'Passed', X, passed.length)}
+          {navItem('resume', 'Resume', FileText)}
         </nav>
       </div>
       <div className="toast-region" aria-live="polite" aria-atomic="true">
@@ -735,9 +776,23 @@ export default function App() {
             Company preferences stay local. Outreach drafts exist only while their company dialog is
             open and are discarded when it closes. Copying a draft puts it on your device’s
             clipboard. Clearing browser data also clears your preferences. They do not sync between
-            devices.
+            devices. Resume files are read in your browser and their text stays in session memory
+            until deleted or reloaded. Only an explicit AI cleanup request sends the extracted text
+            through the local server to OpenAI. Provider retention may apply.
           </p>
           <div className="privacy-controls">
+            <PrivacyRow
+              title="Resume content"
+              description={
+                resume
+                  ? 'One resume in session memory'
+                  : resumeEnabled
+                    ? 'Workspace enabled; no resume imported'
+                    : 'No resume content stored'
+              }
+              onClear={() => clearData('resume')}
+              disabled={!resumeEnabled && !resume}
+            />
             <PrivacyRow
               title="Saved companies"
               description={`${saved.length} ${saved.length === 1 ? 'company' : 'companies'} in your collection`}
@@ -766,7 +821,12 @@ export default function App() {
           <button
             className="danger-button"
             disabled={
-              !saved.length && !passed.length && !activeFilters && preferences.theme === 'light'
+              !saved.length &&
+              !passed.length &&
+              !activeFilters &&
+              preferences.theme === 'light' &&
+              !resumeEnabled &&
+              !resume
             }
             onClick={() => clearData('all')}
           >
@@ -774,8 +834,9 @@ export default function App() {
             Clear all local data
           </button>
           <p className="fine-print">
-            This prototype has no resume uploads, AI services, analytics, or automatic email
-            sending. Opening an external source link will visit that website.
+            Resume text is never put in browser storage. There are no analytics or automatic emails.
+            Downloaded files and clipboard copies must be deleted on your device separately. Opening
+            an external source link will visit that website.
           </p>
         </Modal>
       )}
@@ -814,6 +875,7 @@ export default function App() {
     </div>
   );
 }
+
 function FilterSelect({
   label,
   value,
@@ -846,6 +908,7 @@ function FilterSelect({
     </label>
   );
 }
+
 function PrivacyRow({
   title,
   description,
@@ -870,6 +933,7 @@ function PrivacyRow({
     </div>
   );
 }
+
 function CompanyDetails({
   company,
   onClose,
