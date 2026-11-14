@@ -4,7 +4,7 @@ Updated November 13, 2026. This report describes the implementation in this bran
 
 ## Current state
 
-LaunchScout is a working local prototype with a responsive swipe-card interface and an optional resume workspace. It is **not yet the completed real-data MVP**. All 20 company listings, statistics, and opportunities are fictional fixtures, clearly labeled in the interface. No API credentials or private resumes are included.
+LaunchScout is a working local prototype with a responsive swipe-card interface, an optional resume workspace, and a frontend-only login preview. It is **not yet the completed real-data MVP**. All 20 company listings, statistics, and opportunities are fictional fixtures, clearly labeled in the interface. No API credentials or private resumes are included. The login preview does not authenticate or create accounts.
 
 ## Issue status and ownership
 
@@ -17,11 +17,22 @@ LaunchScout is a working local prototype with a responsive swipe-card interface 
 
 Issues #2 and #3 remain open because their full acceptance criteria have not been met. Completed implementation slices are committed by issue, without automatic issue-closing keywords.
 
+## Account work breakdown
+
+| Issue                                                                           | Owner  | Status in this branch                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [#6: PostgreSQL accounts](https://github.com/GaelCT/LaunchScout/issues/6)       | GaelCT | Not implemented: PostgreSQL schema, migrations, persistent users, and account data APIs.                                                                                                                                                                                 |
+| [#7: Login-page prototype](https://github.com/GaelCT/LaunchScout/issues/7)      | GaelCT | Frontend implemented for review: responsive light/dark page, local validation, show/hide password, cancelable mock submission, credential cleanup, clear guest/preview feedback, disabled recovery/registration controls, and inactive OAuth/future-method placeholders. |
+| [#8: Password hashing and JWTs](https://github.com/GaelCT/LaunchScout/issues/8) | GaelCT | Not implemented: real credential verification, hashing, token/session issuance and validation, recovery, logout/revocation, and backend authorization.                                                                                                                   |
+
+Google, Microsoft, GitHub, passkeys, and email links are placeholders only. No OAuth or other external sign-in provider is connected. The `AuthAdapter` boundary is ready for a future real service; the current mock creates no tokens or persisted login state.
+
 ## What users can do now
 
 - Explore fictional local companies, save or pass, restore selections, filter the discovery deck, and retain preferences after reloading.
 - Open company details and edit/copy a non-AI outreach template. No email is automatically sent.
 - Use the light/dark theme toggle and swipe, button, or keyboard card actions.
+- Open **Sign in** to preview the login interface with fictional inputs, then return to the guest app. Fields clear after mock submission or leaving the login page.
 - Import a resume locally, correct extracted text, edit/preview Markdown, approve it, and download a reusable copy without any API key.
 - Download and run `public/tools/parse_resume.py` without an LLM. PDF support needs `pypdf`; DOCX/TXT/Markdown use Python's standard library.
 - Optionally request AI resume-format cleanup after explicit consent, if the local server is configured with `OPENAI_API_KEY` and `OPENAI_MODEL`. This is resume cleanup, not company-specific email generation or job-specific resume tailoring.
@@ -37,7 +48,7 @@ Issues #2 and #3 remain open because their full acceptance criteria have not bee
 ## Validation
 
 - Production TypeScript/Vite build and Prettier formatting checks.
-- 42 Playwright checks across desktop and an emulated phone viewport in Chromium: 22 discovery/theme/privacy checks and 20 resume checks, including no-key downloads, actual PDF/DOCX extraction, safe Markdown preview, consent, error recovery, and deletion during in-flight cleanup.
+- 56 Playwright checks across desktop and an emulated phone viewport in Chromium: 22 discovery/theme/privacy checks, 20 resume checks, and 14 login-preview checks. These include no-key downloads, actual PDF/DOCX extraction, safe Markdown preview, consent, error recovery, deletion during in-flight cleanup, mock sign-in/cancellation, credential cleanup, inactive providers, and guest navigation.
 - 17 Python parser unit tests with socket creation disabled, plus a command-line conversion of the fictional PDF.
 - AI browser responses are mocked; no live LLM factual-quality, cost, latency, or refusal evaluation has been performed.
 - Phone viewport checks are not a Safari/WebKit compatibility claim. GitHub Actions results must be checked after the branch is pushed.
