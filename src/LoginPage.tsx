@@ -337,16 +337,6 @@ export function LoginPage({
                 <small>Planned</small>
               </button>
               <button disabled type="button">
-                <span className="provider-microsoft" aria-hidden="true">
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                </span>
-                <span>Microsoft</span>
-                <small>Planned</small>
-              </button>
-              <button disabled type="button">
                 <Github size={18} />
                 <span>GitHub</span>
                 <small>Planned</small>

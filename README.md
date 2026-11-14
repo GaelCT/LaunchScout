@@ -43,7 +43,7 @@ npm run format:check
 
 The sign-in entry appears in the desktop header and as a sign-in icon beside the theme/privacy controls on mobile. Use fictional details or **Use example details** to try it. **Preview sign in** simulates a short local loading state, clears the form, and explicitly confirms that the visitor is still a guest. Guest discovery, saved preferences, and the current session resume remain available.
 
-Google, Microsoft, and GitHub buttons are disabled placeholders. Passkeys and email links are listed as possible future choices. No OAuth provider has been selected or connected. Account creation and password recovery are visibly marked for later rather than linked to nonexistent flows.
+Google and GitHub buttons are disabled placeholders. Passkeys and email links are listed as possible future choices. No OAuth provider has been selected or connected. Account creation and password recovery are visibly marked for later rather than linked to nonexistent flows.
 
 `src/auth.ts` defines the `AuthAdapter` boundary and a cancelable mock adapter. It ignores the supplied credentials and performs no I/O. Login values remain in component memory only; no login state or token is stored in cookies, localStorage, sessionStorage, URLs, or logs. Real authentication must replace the adapter and add real session/error handling under [#8](https://github.com/GaelCT/LaunchScout/issues/8), with PostgreSQL account data tracked in [#6](https://github.com/GaelCT/LaunchScout/issues/6). The preview must never authorize backend access. This implements the frontend scope of [#7](https://github.com/GaelCT/LaunchScout/issues/7).
 

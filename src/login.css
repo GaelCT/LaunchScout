@@ -520,7 +520,7 @@
 }
 .login-provider-options {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 9px;
 }
 .login-provider-options button {
@@ -549,17 +549,6 @@
   font-family: Arial, sans-serif;
   font-weight: 600;
   line-height: 18px;
-}
-.provider-microsoft {
-  display: grid;
-  grid-template-columns: 7px 7px;
-  grid-template-rows: 7px 7px;
-  gap: 2px;
-  height: 18px;
-  padding-top: 1px;
-}
-.provider-microsoft i {
-  background: var(--login-muted);
 }
 .login-other-methods {
   display: flex;

@@ -25,7 +25,11 @@ Issues #2 and #3 remain open because their full acceptance criteria have not bee
 | [#7: Login-page prototype](https://github.com/GaelCT/LaunchScout/issues/7)      | GaelCT | Frontend implemented for review: responsive light/dark page, local validation, show/hide password, cancelable mock submission, credential cleanup, clear guest/preview feedback, disabled recovery/registration controls, and inactive OAuth/future-method placeholders. |
 | [#8: Password hashing and JWTs](https://github.com/GaelCT/LaunchScout/issues/8) | GaelCT | Not implemented: real credential verification, hashing, token/session issuance and validation, recovery, logout/revocation, and backend authorization.                                                                                                                   |
 
-Google, Microsoft, GitHub, passkeys, and email links are placeholders only. No OAuth or other external sign-in provider is connected. The `AuthAdapter` boundary is ready for a future real service; the current mock creates no tokens or persisted login state.
+Google, GitHub, passkeys, and email links are placeholders only. No OAuth or other external sign-in provider is connected. The `AuthAdapter` boundary is ready for a future real service; the current mock creates no tokens or persisted login state.
+
+## Planned Mistral integration
+
+[#10: Privacy-focused Mistral integration](https://github.com/GaelCT/LaunchScout/issues/10) is assigned to GaelCT. It tracks the planned provider integration, local/self-hosted versus hosted inference decision, verified retention/training settings, accurate consent and privacy copy, and no silent fallback to another provider. Mistral is not connected yet; the existing optional cleanup endpoint still uses OpenAI when configured, and the no-key local parsers remain available.
 
 ## What users can do now
 

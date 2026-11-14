@@ -18,9 +18,10 @@ test('login preview is discoverable, keyboard accessible and has inactive provid
   await open(page);
   await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
   await expect(page.getByText(/This preview doesn’t create an account/)).toBeVisible();
-  for (const name of [/Google/, /Microsoft/, /GitHub/, /Forgot password/, /Create an account/]) {
+  for (const name of [/Google/, /GitHub/, /Forgot password/, /Create an account/]) {
     await expect(page.getByRole('button', { name })).toBeDisabled();
   }
+  await expect(page.getByRole('button', { name: /Microsoft/ })).toHaveCount(0);
   await expect(page.getByText('Passkeys', { exact: true })).toBeVisible();
   await expect(page.getByText('Email link', { exact: true })).toBeVisible();
   await email(page).focus();
