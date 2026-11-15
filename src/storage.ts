@@ -1,8 +1,9 @@
-import { cities, companies, industries, opportunityTypes } from './data';
+import { cities, companies, companyTypes, industries, opportunityTypes } from './data';
 
 export const STORAGE_KEY = 'launchscout.preferences.v1';
 export interface Filters {
   city: string;
+  companyType: string;
   industry: string;
   opportunity: string;
 }
@@ -12,7 +13,7 @@ export interface Preferences {
   filters: Filters;
   theme: 'light' | 'dark';
 }
-export const emptyFilters: Filters = { city: '', industry: '', opportunity: '' };
+export const emptyFilters: Filters = { city: '', companyType: '', industry: '', opportunity: '' };
 export const emptyPreferences: Preferences = {
   saved: [],
   rejected: [],
@@ -41,6 +42,7 @@ export function loadPreferences(): { preferences: Preferences; error: boolean } 
         theme: value?.theme === 'dark' ? 'dark' : 'light',
         filters: {
           city: filter(value?.filters?.city, cities),
+          companyType: filter(value?.filters?.companyType, companyTypes),
           industry: filter(value?.filters?.industry, industries),
           opportunity: filter(value?.filters?.opportunity, opportunityTypes),
         },

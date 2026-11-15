@@ -14,7 +14,6 @@ import {
   MapPin,
   Moon,
   RotateCcw,
-  Search,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
@@ -25,7 +24,7 @@ import {
   X,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { cities, companies, industries, opportunityTypes } from './data';
+import { cities, companies, companyTypes, datasetInfo, industries, opportunityTypes } from './data';
 import type { Company } from './data';
 import { emptyFilters, emptyPreferences, loadPreferences, STORAGE_KEY } from './storage';
 import type { Filters, Preferences } from './storage';
@@ -49,16 +48,16 @@ function Brand({ small = false }: { small?: boolean }) {
 }
 
 function CompanyArt({ company, compact = false }: { company: Company; compact?: boolean }) {
-  const ArtIcon =
-    company.industry === 'AgTech'
-      ? Sprout
-      : company.industry === 'Clean energy'
-        ? Sparkles
-        : company.industry === 'HealthTech'
-          ? Users
-          : company.industry === 'Climate tech'
-            ? Leaf
-            : Compass;
+  const industry = company.industries.join(' ').toLowerCase();
+  const ArtIcon = /agtech|agriculture|food/.test(industry)
+    ? Sprout
+    : /energy|aerospace|defense/.test(industry)
+      ? Sparkles
+      : /health|clinical|neural/.test(industry)
+        ? Users
+        : /climate|environment/.test(industry)
+          ? Leaf
+          : Compass;
   return (
     <div
       className={`company-art ${company.color} ${compact ? 'compact-art' : ''}`}
@@ -67,16 +66,34 @@ function CompanyArt({ company, compact = false }: { company: Company; compact?: 
       <span className="art-grid" />
       <span className="art-orbit orbit-one" />
       <span className="art-orbit orbit-two" />
-      <span className="art-caption">GROW SOMETHING GOOD</span>
+      <span className="art-caption">LOCAL OPPORTUNITY</span>
       <span className="art-center">
         <ArtIcon size={76} strokeWidth={1.1} />
       </span>
       <span className="art-spark spark-one">✳</span>
       <span className="art-spark spark-two">+</span>
-      <span className="art-bottom">Rooted here. Reaching further.</span>
-      <span className="art-coordinate">35° N · 119° W</span>
+      <span className="art-bottom">Kern County & nearby</span>
+      <span className="art-coordinate">KERN COUNTY, CA</span>
     </div>
   );
+}
+
+function formatRoleSearchStatus(status: string): string {
+  const labels: Record<string, string> = {
+    no_relevant_public_roles: 'No relevant public role verified',
+    not_hiring_at_snapshot: 'Not hiring at last check',
+    no_relevant_local_student_role: 'No local student role verified',
+    open_student_roles: 'Student roles listed open at last check',
+    open_student_and_early_career_roles: 'Student and early-career roles listed open at last check',
+    open_student_role_reported: 'Student role reported; recheck employer page',
+    closed_or_expired: 'Roles closed or expired at last check',
+    no_relevant_student_role: 'No relevant student role verified',
+    open_nonstudent_role: 'Professional role listed open at last check',
+    no_specific_student_role: 'No specific student role verified',
+    open_nonstudent_roles: 'Professional roles listed open at last check',
+    program_announced_no_specific_role: 'Program announced; role details not yet listed',
+  };
+  return labels[status] ?? status.replaceAll('_', ' ');
 }
 
 export default function App() {
@@ -128,7 +145,8 @@ export default function App() {
       !preferences.saved.includes(company.id) &&
       !preferences.rejected.includes(company.id) &&
       (!filters.city || company.city === filters.city) &&
-      (!filters.industry || company.industry === filters.industry) &&
+      (!filters.companyType || company.companyTypeLabel === filters.companyType) &&
+      (!filters.industry || company.industries.includes(filters.industry)) &&
       (!filters.opportunity || company.opportunities.some((type) => type === filters.opportunity)),
   );
   const current = filtered[0];
@@ -240,6 +258,13 @@ export default function App() {
         onChange={(value) => setFilter('city', value)}
       />
       <FilterSelect
+        label="Company type"
+        value={filters.companyType}
+        options={companyTypes}
+        allLabel="All company types"
+        onChange={(value) => setFilter('companyType', value)}
+      />
+      <FilterSelect
         label="Industry"
         value={filters.industry}
         options={industries}
@@ -247,13 +272,15 @@ export default function App() {
         onChange={(value) => setFilter('industry', value)}
       />
       <FilterSelect
-        label="Opportunity"
+        label="Role type"
         value={filters.opportunity}
         options={opportunityTypes}
-        allLabel="All opportunities"
+        allLabel="All role types"
         onChange={(value) => setFilter('opportunity', value)}
       />
-      <p className="filter-note">Opportunity types are examples in this demo, not live openings.</p>
+      <p className="filter-note">
+        Role types come from the listed openings and their report snapshot.
+      </p>
     </>
   );
 
@@ -319,7 +346,7 @@ export default function App() {
             {themeToggle}
             <span className="demo-badge">
               <span />
-              DEMO MODE
+              RESEARCH SNAPSHOT
             </span>
             <button className="about-button" onClick={() => setAbout(true)}>
               About LaunchScout
@@ -342,10 +369,10 @@ export default function App() {
           <div className="demo-notice">
             <Sparkles size={16} />
             <span>
-              A little preview of what’s possible.{' '}
-              <strong>All companies, stats, and opportunities here are fictional.</strong>
+              Research snapshot: {datasetInfo.sourceSnapshotDate}.{' '}
+              <strong>Check employer sources before applying; role status may have changed.</strong>
             </span>
-            <button onClick={() => setAbout(true)} aria-label="Learn about demo data">
+            <button onClick={() => setAbout(true)} aria-label="Learn about the research data">
               <ArrowUpRight size={17} />
             </button>
           </div>
@@ -520,7 +547,7 @@ export default function App() {
                           <MapPin size={13} />
                           {current.city}, CA
                         </span>
-                        <span className="sample-tag">FICTIONAL COMPANY</span>
+                        <span className="sample-tag">{current.companyTypeLabel.toUpperCase()}</span>
                         <div className="card-content">
                           <div className="company-title-row">
                             <span className={`company-logo ${current.color}`}>
@@ -538,17 +565,17 @@ export default function App() {
                               current.opportunities.map((type) => (
                                 <span key={type}>
                                   <span />
-                                  {type} <small>· sample</small>
+                                  {type}
                                 </span>
                               ))
                             ) : (
-                              <span>Opportunities unknown</span>
+                              <span>{formatRoleSearchStatus(current.roleSearch.status)}</span>
                             )}
                           </div>
                           <div className="card-meta">
                             <span>
                               <ShieldCheck size={14} />
-                              Demo listing · Not verified
+                              Role check · {current.roleSearch.checkedAt}
                             </span>
                             <span>
                               Explore company
@@ -846,20 +873,20 @@ export default function App() {
             <Sprout size={55} strokeWidth={1.2} />
           </div>
           <p className="modal-copy">
-            LaunchScout helps you discover companies in Bakersfield and nearby Central Valley
-            cities, save the ones that spark your curiosity, and start thoughtful conversations.
+            LaunchScout helps you discover startups and employers across Kern County, save the ones
+            that spark your curiosity, and start thoughtful conversations.
           </p>
           <div className="sample-callout">
-            <strong>You’re exploring a fictional demo.</strong>
+            <strong>These listings come from a dated research snapshot.</strong>
             <p>
-              All 20 company names, descriptions, statistics, and opportunities are made-up
-              fixtures. No listings have been verified, and there are no real source or contact
-              links yet.
+              The report was checked on {datasetInfo.sourceSnapshotDate}. Open each source before
+              applying; openings, requirements, and contact routes may have changed since then.
             </p>
           </div>
           <p className="modal-copy">
-            Reviewed public company information from research issue #1 will replace these examples
-            before the real-data MVP is complete.
+            Company cards, internship programs, and ecosystem resources are kept as separate record
+            types. Potential skill fit is a LaunchScout assessment, not an employer promise or job
+            requirement.
           </p>
           <a
             className="external-link"
@@ -934,6 +961,13 @@ function PrivacyRow({
   );
 }
 
+function formatOpeningStatus(status: string): string {
+  if (status === 'open_at_snapshot') return 'Listed open at report check';
+  if (status === 'open_reported_verify_live') return 'Reported active; verify on employer site';
+  if (status === 'closed_at_snapshot') return 'Closed at report check';
+  return status.replaceAll('_', ' ');
+}
+
 function CompanyDetails({
   company,
   onClose,
@@ -946,9 +980,9 @@ function CompanyDetails({
   onSave: () => void;
 }) {
   const [tab, setTab] = useState<'overview' | 'outreach'>('overview');
-  const [subject, setSubject] = useState(`Demo inquiry — learning more about ${company.name}`);
+  const [subject, setSubject] = useState(`Student inquiry — ${company.name}`);
   const [body, setBody] = useState(
-    `[DEMO — ${company.name} is fictional. Replace this draft with reviewed company information before using it.]\n\nHello ${company.name} team,\n\nI came across your work in ${company.industry.toLowerCase()} in ${company.city} and would love to learn more about your team.\n\n[Add a sentence about yourself and what interests you about the company.]\n\nWould someone on your team be open to a short introductory conversation?\n\nThank you for your time,\n[Your name]`,
+    `Hello ${company.name} team,\n\nI’m a student interested in ${company.industry.toLowerCase()} and learning more about your work. I’m especially interested in ${company.potentialStudentFit.skillAreas.slice(0, 2).join(' and ')}.\n\nI saw that your public role information was checked on ${company.roleSearch.checkedAt}. Would you be open to sharing whether you expect student project, internship, or entry-level opportunities?\n\nThank you for your time,\n[Your name]`,
   );
   const [copyStatus, setCopyStatus] = useState('');
   async function copyDraft() {
@@ -963,9 +997,10 @@ function CompanyDetails({
     <Modal title={company.name} onClose={onClose} wide>
       <div className="detail-subtitle">
         <MapPin size={15} />
-        {company.city}, CA<span>·</span>
+        {company.city}, {company.localConnection.state}
+        <span>·</span>
         {company.industry}
-        <span className="sample-tag-inline">Fictional demo</span>
+        <span className="sample-tag-inline">{company.companyTypeLabel}</span>
       </div>
       <div
         className="detail-tabs"
@@ -1014,33 +1049,97 @@ function CompanyDetails({
           <CompanyArt company={company} compact />
           <h3 className="detail-tagline">{company.tagline}</h3>
           <p className="modal-copy">{company.description}</p>
+          {company.localConnection.note && (
+            <p className="modal-copy">{company.localConnection.note}</p>
+          )}
           <div className="stats-grid">
             <div>
-              <span>Founded · sample</span>
-              <strong>{company.founded}</strong>
+              <span>Founded / launched</span>
+              <strong>{company.founded ?? 'Not reported'}</strong>
             </div>
             <div>
-              <span>Team size · sample</span>
-              <strong>{company.team}</strong>
+              <span>Team size</span>
+              <strong>{company.team ?? 'Not reported'}</strong>
             </div>
             <div>
-              <span>Verification date</span>
-              <strong className="stat-text">Not verified</strong>
+              <span>Role information checked</span>
+              <strong className="stat-text">{company.roleSearch.checkedAt}</strong>
             </div>
           </div>
-          <h3 className="detail-section-title">Example opportunities</h3>
+          <h3 className="detail-section-title">Potential skill fit</h3>
+          <p className="modal-copy">{company.potentialStudentFit.note}</p>
           <div className="opportunity-tags">
-            {company.opportunities.length ? (
-              company.opportunities.map((type) => (
-                <span key={type}>
-                  {type} <small>· fictional</small>
-                </span>
-              ))
-            ) : (
-              <p>No opportunity information available.</p>
-            )}
+            {company.potentialStudentFit.skillAreas.map((skill) => (
+              <span key={skill}>{skill}</span>
+            ))}
           </div>
-          <h3 className="detail-section-title">Sources & verification</h3>
+          <h3 className="detail-section-title">Role status</h3>
+          <p className="modal-copy">
+            <strong>{formatRoleSearchStatus(company.roleSearch.status)}</strong>
+            <br />
+            {company.roleSearch.note}
+          </p>
+          <h3 className="detail-section-title">Roles in the research snapshot</h3>
+          {company.openings.length ? (
+            company.openings.map((opening) => (
+              <div className="role-snapshot" key={opening.id}>
+                <h4>{opening.title}</h4>
+                <p>
+                  {formatOpeningStatus(opening.status)}
+                  {opening.location ? ` · ${opening.location}` : ''}
+                  {opening.studentSuitability
+                    ? ` · ${opening.studentSuitability.replaceAll('_', ' ')}`
+                    : ''}
+                </p>
+                {opening.educationRequirements && <p>Education: {opening.educationRequirements}</p>}
+                {opening.experienceRequirements && (
+                  <p>Experience: {opening.experienceRequirements}</p>
+                )}
+                {opening.skills.length > 0 && <p>Skills: {opening.skills.join(', ')}</p>}
+                {opening.workArrangement && (
+                  <p>Schedule / arrangement: {opening.workArrangement}</p>
+                )}
+                {opening.pay && (
+                  <p>
+                    Pay: ${opening.pay.min.toLocaleString()}–${opening.pay.max.toLocaleString()}{' '}
+                    {opening.pay.currency} per {opening.pay.period}
+                    {opening.pay.verification === 'aggregator_reported_unconfirmed'
+                      ? ' (aggregator-reported; confirm with employer)'
+                      : ''}
+                  </p>
+                )}
+                {opening.citizenshipOrClearance && (
+                  <p>Citizenship / clearance: {opening.citizenshipOrClearance}</p>
+                )}
+                {opening.notes && <p>{opening.notes}</p>}
+                {opening.applicationUrl && (
+                  <a
+                    className="external-link"
+                    href={opening.applicationUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View role / application
+                    <ExternalLink size={14} />
+                  </a>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="modal-copy">No specific role is listed in this research snapshot.</p>
+          )}
+          {company.studentPrograms.length > 0 && (
+            <>
+              <h3 className="detail-section-title">Student programs</h3>
+              {company.studentPrograms.map((program, index) => (
+                <p className="modal-copy" key={index}>
+                  {String(program.name)} — {String(program.status).replaceAll('_', ' ')}.
+                  {program.location ? ` ${String(program.location)}.` : ''}
+                </p>
+              ))}
+            </>
+          )}
+          <h3 className="detail-section-title">Sources</h3>
           {company.sources.length ? (
             company.sources.map((source) => (
               <a
@@ -1050,18 +1149,23 @@ function CompanyDetails({
                 target="_blank"
                 rel="noreferrer"
               >
-                {source.label}
+                {source.label} · checked {source.checkedAt}
                 <ExternalLink size={14} />
               </a>
             ))
           ) : (
-            <div className="sample-callout">
-              <Search size={19} />
-              <p>
-                No public sources are attached to this fictional listing. Statistics and
-                opportunities above are sample data, not verified facts or active openings.
-              </p>
-            </div>
+            <p className="modal-copy">No source links are recorded for this listing.</p>
+          )}
+          {company.publicLinks.contact && (
+            <a
+              className="external-link"
+              href={company.publicLinks.contact}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Public contact route
+              <ExternalLink size={14} />
+            </a>
           )}
           <div className="modal-actions">
             <button className="secondary-button" disabled={isSaved} onClick={onSave}>
@@ -1079,8 +1183,8 @@ function CompanyDetails({
           <div className="draft-note">
             <ShieldCheck size={19} />
             <p>
-              A starting point, in your own words. This template uses fictional demo information. No
-              recipient is supplied and nothing will be sent.
+              This editable draft uses the company information above. Confirm the contact route and
+              review every detail before sending; LaunchScout will not send it for you.
             </p>
           </div>
           <label className="draft-label">

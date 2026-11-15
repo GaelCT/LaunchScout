@@ -1405,6 +1405,21 @@ kbd {
   font-weight: 600;
   margin: 22px 0 11px;
 }
+.role-snapshot {
+  padding: 13px 0;
+  border-top: 1px solid var(--line);
+}
+.role-snapshot h4 {
+  margin: 0 0 7px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.role-snapshot p {
+  margin: 5px 0;
+  color: #839076;
+  font-size: 11px;
+  line-height: 1.7;
+}
 .modal-actions {
   display: flex;
   justify-content: space-between;

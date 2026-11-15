@@ -27,6 +27,9 @@ html[data-theme='dark'] {
 [data-theme='dark'] .topbar {
   background: #151a2166;
 }
+[data-theme='dark'] .role-snapshot p {
+  color: var(--secondary);
+}
 [data-theme='dark'] :is(.company-card, .collection-card, .saved-teaser, .modal) {
   background: var(--surface);
   color: var(--ink);

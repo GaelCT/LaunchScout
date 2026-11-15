@@ -1,0 +1,1962 @@
+{
+  "schemaVersion": 1,
+  "dataset": {
+    "name": "LaunchScout Kern County startup and employer research",
+    "scope": {
+      "county": "Kern",
+      "state": "CA",
+      "country": "US"
+    },
+    "sourceSnapshotDate": "2026-11-13",
+    "roleRecheckDays": 7,
+    "companyRecheckDays": 75,
+    "note": "Snapshot from the attached report. Job status and employer pages require rechecking before display as current."
+  },
+  "companies": [
+    {
+      "id": "kordata-dynamics",
+      "name": "Kordata Dynamics",
+      "companyType": "startup",
+      "localConnection": {
+        "type": "local_presence",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA",
+        "note": "The report lists Bakersfield but does not specify that it is the headquarters."
+      },
+      "industry": ["Clinical-trial technology", "HealthTech"],
+      "description": "Pre-seed startup launched in 2026; AI-enabled clinical-trial execution and precision-health data processing.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Backend",
+          "Data engineering",
+          "Applied ML",
+          "Health data",
+          "Product systems"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://kordatadynamics.com/",
+        "careers": null,
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "no_relevant_public_roles",
+        "checkedAt": "2026-11-13",
+        "note": "No public student role or careers listing was verified, and no public minimum experience requirement was found. The report recommends a focused inquiry about project, internship, or informational opportunities."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Kordata Dynamics website",
+          "url": "https://kordatadynamics.com/",
+          "sourceType": "company_website",
+          "checkedAt": "2026-11-13",
+          "supports": ["identity", "website"]
+        },
+        {
+          "label": "Company launch announcement",
+          "url": "https://kordatadynamics.com/launch-news/",
+          "sourceType": "company_announcement",
+          "checkedAt": "2026-11-13",
+          "supports": ["launch_year", "description", "local_presence"]
+        }
+      ],
+      "launchYear": 2026
+    },
+    {
+      "id": "m8-systems",
+      "name": "M8 Systems",
+      "companyType": "startup",
+      "localConnection": {
+        "type": "headquarters",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["AgTech"],
+      "description": "Active ag-tech company founded in 2020; AI-powered irrigation automation using proprietary controllers, software, sensors, and a cloud platform.",
+      "potentialStudentFit": {
+        "skillAreas": ["Backend and cloud", "IoT", "Data engineering", "Applied ML", "Controls"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.m8systems.com/",
+        "careers": null,
+        "contact": "https://www.m8systems.com/contact-us"
+      },
+      "roleSearch": {
+        "status": "no_relevant_public_roles",
+        "checkedAt": "2026-11-13",
+        "note": "No public student or engineering opening or careers page was found in the report. No public student-level experience requirements were found. Use the official contact form."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "M8 Systems About page",
+          "url": "https://www.m8systems.com/about",
+          "sourceType": "company_website",
+          "checkedAt": "2026-11-13",
+          "supports": ["description", "headquarters", "founded_year"]
+        },
+        {
+          "label": "M8 Systems contact page",
+          "url": "https://www.m8systems.com/contact-us",
+          "sourceType": "company_contact",
+          "checkedAt": "2026-11-13",
+          "supports": ["public_contact_route"]
+        }
+      ],
+      "foundedYear": 2020
+    },
+    {
+      "id": "renewell-energy",
+      "name": "Renewell Energy",
+      "companyType": "startup",
+      "localConnection": {
+        "type": "project_activity",
+        "city": null,
+        "county": "Kern",
+        "state": "CA",
+        "note": "Kern project activity is documented; do not infer a Kern headquarters."
+      },
+      "industry": ["Clean energy", "Energy storage"],
+      "description": "Active early-stage clean-energy startup repurposing inactive oil wells for gravity-based energy storage.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Controls",
+          "Backend and data",
+          "Telemetry",
+          "Monitoring",
+          "Energy systems",
+          "Applied analytics"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": null,
+        "careers": "https://renewellenergy.com/careers/",
+        "contact": "https://renewellenergy.com/get-in-touch/"
+      },
+      "roleSearch": {
+        "status": "not_hiring_at_snapshot",
+        "checkedAt": "2026-11-13",
+        "note": "Official careers page said the company was not currently hiring. No student experience requirements were published."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Renewell careers",
+          "url": "https://renewellenergy.com/careers/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["hiring_status"]
+        },
+        {
+          "label": "Renewell contact",
+          "url": "https://renewellenergy.com/get-in-touch/",
+          "sourceType": "company_contact",
+          "checkedAt": "2026-11-13",
+          "supports": ["public_contact_route"]
+        },
+        {
+          "label": "Gravity Well technology",
+          "url": "https://renewellenergy.com/our-gravity-energy-storage-technology/",
+          "sourceType": "company_website",
+          "checkedAt": "2026-11-13",
+          "supports": ["description", "technology"]
+        },
+        {
+          "label": "California Energy Commission project record",
+          "url": "https://www.energy.ca.gov/filebrowser/download/7747?fid=7747",
+          "sourceType": "government_project_record",
+          "checkedAt": "2026-11-13",
+          "supports": ["Kern_project_activity"]
+        }
+      ]
+    },
+    {
+      "id": "bios-health",
+      "name": "BIOS Health",
+      "companyType": "startup",
+      "localConnection": {
+        "type": "initiative_announced",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA",
+        "note": "Bakersfield precision-medicine center was announced with local partners; this does not establish a local headquarters."
+      },
+      "industry": ["Neural engineering", "HealthTech", "AI"],
+      "description": "Active neural-engineering company working on neural interfaces, AI, neural biomarkers, and clinical research.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Applied ML",
+          "Data engineering",
+          "Backend and full-stack",
+          "Scientific software"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.bios.health/",
+        "careers": "https://www.bios.health/careers",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "no_relevant_local_student_role",
+        "checkedAt": "2026-11-13",
+        "note": "The company says it runs paid summer internships, but no Bakersfield student position was verified. A current Full-Stack Engineer posting was in Cambridge, UK and required UK work authorization plus 3+ professional years."
+      },
+      "openings": [],
+      "studentPrograms": [
+        {
+          "name": "Paid summer internship program",
+          "status": "program_exists_current_local_cycle_unverified",
+          "location": "Not verified for Bakersfield",
+          "sourceUrls": ["https://www.bios.health/careers"]
+        }
+      ],
+      "sources": [
+        {
+          "label": "BIOS careers and internships",
+          "url": "https://www.bios.health/careers",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["internship_program"]
+        },
+        {
+          "label": "BIOS job postings",
+          "url": "https://www.bios.health/careers/job-postings",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["UK_role", "UK_requirements"]
+        },
+        {
+          "label": "Bakersfield precision-medicine announcement",
+          "url": "https://www.bios.health/bios-health-bakersfield-precision-medicine-press-release",
+          "sourceType": "company_announcement",
+          "checkedAt": "2026-11-13",
+          "supports": ["local_initiative"]
+        }
+      ],
+      "headquarters": "United Kingdom"
+    },
+    {
+      "id": "mill-it",
+      "name": "Mill It",
+      "companyType": "startup",
+      "localConnection": {
+        "type": "local_presence",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Food technology", "Consumer products"],
+      "description": "Active plant-based food startup founded in 2018; develops dairy-free products using ancient grains.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Business systems",
+          "Analytics",
+          "E-commerce",
+          "Operations",
+          "Food technology"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.millitfarms.com/",
+        "careers": null,
+        "contact": "https://www.millitfarms.com/pages/contact"
+      },
+      "roleSearch": {
+        "status": "no_relevant_public_roles",
+        "checkedAt": "2026-11-13",
+        "note": "No student software or data opening and no public student requirements were found. The report suggests asking about project-based opportunities rather than assuming a technical team is hiring."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Mill It products",
+          "url": "https://www.millitfarms.com/",
+          "sourceType": "company_website",
+          "checkedAt": "2026-11-13",
+          "supports": ["products", "description"]
+        },
+        {
+          "label": "Mill It contact",
+          "url": "https://www.millitfarms.com/pages/contact",
+          "sourceType": "company_contact",
+          "checkedAt": "2026-11-13",
+          "supports": ["public_contact_route"]
+        },
+        {
+          "label": "Mill It company profile",
+          "url": "https://www.linkedin.com/company/mill-it-inc",
+          "sourceType": "company_profile",
+          "checkedAt": "2026-11-13",
+          "supports": ["company_profile", "location"]
+        }
+      ],
+      "foundedYear": 2018
+    },
+    {
+      "id": "stratolaunch",
+      "name": "Stratolaunch",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Mojave",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Aerospace", "Flight test", "Software", "Data systems"],
+      "description": "Aerospace flight-test company working in hypersonic flight testing, aircraft, data, and enterprise systems.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Business intelligence",
+          "Systems",
+          "Software",
+          "IT",
+          "Data analysis",
+          "Applied ML/MLOps"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.stratolaunch.com/",
+        "careers": "https://www.stratolaunch.com/careers/positions/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "open_student_roles",
+        "checkedAt": "2026-11-13",
+        "note": "The report listed two relevant 2027 internships as open. Recheck exact status, closing date, and role-specific eligibility before applying."
+      },
+      "openings": [
+        {
+          "id": "business-intelligence-and-systems-analyst-intern-2027",
+          "title": "Business Intelligence & Systems Analyst Intern 2027",
+          "roleType": "internship",
+          "status": "open_at_snapshot",
+          "location": "Mojave, CA",
+          "studentSuitability": "student_role",
+          "experienceRequirements": "BI tools and basic SQL",
+          "educationRequirements": "Enrolled bachelor's or master's student in a related discipline",
+          "skills": ["Dashboards", "Data validation", "Reporting", "SQL", "Enterprise systems"],
+          "workArrangement": null,
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://job-boards.greenhouse.io/stratolaunch/jobs/5480612008",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "Confirm role remains open and review exact eligibility on the posting.",
+          "sources": ["https://job-boards.greenhouse.io/stratolaunch/jobs/5480612008"]
+        },
+        {
+          "id": "it-intern---summer-2027",
+          "title": "IT Intern - Summer 2027",
+          "roleType": "internship",
+          "status": "open_at_snapshot",
+          "location": "Mojave, CA",
+          "studentSuitability": "student_role",
+          "experienceRequirements": "Sophomore, junior, or senior progressing toward graduation; Python preferred",
+          "educationRequirements": "Current college enrollment",
+          "skills": ["IT", "Python", "Programming"],
+          "workArrangement": null,
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://job-boards.greenhouse.io/stratolaunch/jobs/5471933008",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "A project summary/presentation was encouraged. Some company roles have citizenship or green-card requirements; verify this specific posting.",
+          "sources": ["https://job-boards.greenhouse.io/stratolaunch/jobs/5471933008"]
+        },
+        {
+          "id": "mlo-engineer",
+          "title": "MLO Engineer",
+          "roleType": "full_time",
+          "status": "open_at_snapshot",
+          "location": "Mojave, CA",
+          "studentSuitability": "professional_not_student",
+          "experienceRequirements": "5-10 years of professional experience",
+          "educationRequirements": null,
+          "skills": ["Machine learning", "MLOps"],
+          "workArrangement": null,
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://job-boards.greenhouse.io/stratolaunch",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "Open role mentioned in the report; not entry-level.",
+          "sources": ["https://job-boards.greenhouse.io/stratolaunch"]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Official Stratolaunch job board",
+          "url": "https://job-boards.greenhouse.io/stratolaunch",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["openings", "company_roles"]
+        },
+        {
+          "label": "Business Intelligence & Systems Analyst Intern 2027",
+          "url": "https://job-boards.greenhouse.io/stratolaunch/jobs/5480612008",
+          "sourceType": "job_posting",
+          "checkedAt": "2026-11-13",
+          "supports": ["role", "requirements", "status"]
+        },
+        {
+          "label": "IT Intern Summer 2027",
+          "url": "https://job-boards.greenhouse.io/stratolaunch/jobs/5471933008",
+          "sourceType": "job_posting",
+          "checkedAt": "2026-11-13",
+          "supports": ["role", "requirements", "status"]
+        }
+      ]
+    },
+    {
+      "id": "wonderful-company",
+      "name": "The Wonderful Company / Wonderful Orchards",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Shafter",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Agriculture", "Food", "Software", "Business systems"],
+      "description": "Large food and agriculture business with local software and IT opportunities.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Backend",
+          "SQL",
+          "APIs",
+          "ERP integrations",
+          "Python automation",
+          "IT operations"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.wonderful.com/",
+        "careers": "https://careers.wonderful.com/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "open_student_and_early_career_roles",
+        "checkedAt": "2026-11-13",
+        "note": "Two relevant official career listings appeared live in the report snapshot. Confirm both postings and internship cycle dates."
+      },
+      "openings": [
+        {
+          "id": "junior-software-developer",
+          "title": "Junior Software Developer",
+          "roleType": "full_time",
+          "status": "open_at_snapshot",
+          "location": "Shafter, CA",
+          "studentSuitability": "early_career_not_internship",
+          "experienceRequirements": "1-2 years application-development experience",
+          "educationRequirements": "Related bachelor's degree",
+          "skills": ["Oracle Fusion", "OIC", "PL/SQL", "SQL", "REST", "SOAP"],
+          "workArrangement": "Hybrid",
+          "pay": {
+            "min": 72000,
+            "max": 75000,
+            "currency": "USD",
+            "period": "year",
+            "verification": "posting"
+          },
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://careers.wonderful.com/jobs/744000025861645",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": null,
+          "sources": ["https://careers.wonderful.com/jobs/744000025861645"]
+        },
+        {
+          "id": "it-services-intern",
+          "title": "IT Services Intern",
+          "roleType": "internship",
+          "status": "open_at_snapshot",
+          "location": "Shafter, CA",
+          "studentSuitability": "student_role",
+          "experienceRequirements": "School-year eligibility was not specified in the page text reviewed",
+          "educationRequirements": null,
+          "skills": [],
+          "workArrangement": "Full-time, 8 weeks; mostly help desk with some advanced support exposure",
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://careers.wonderful.com/jobs/743999972565445",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "Confirm cycle dates and exact eligibility on the live posting.",
+          "sources": ["https://careers.wonderful.com/jobs/743999972565445"]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Junior Software Developer - Shafter",
+          "url": "https://careers.wonderful.com/jobs/744000025861645",
+          "sourceType": "job_posting",
+          "checkedAt": "2026-11-13",
+          "supports": ["role", "pay", "work_arrangement", "requirements"]
+        },
+        {
+          "label": "IT Services Intern",
+          "url": "https://careers.wonderful.com/jobs/743999972565445",
+          "sourceType": "job_posting",
+          "checkedAt": "2026-11-13",
+          "supports": ["role", "internship_details"]
+        }
+      ]
+    },
+    {
+      "id": "grimmway-produce",
+      "name": "Grimmway Produce Group",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Arvin",
+        "county": "Kern",
+        "state": "CA",
+        "note": "Report also describes the employer as serving the Bakersfield area."
+      },
+      "industry": ["Agriculture", "Food", "Business systems"],
+      "description": "Agriculture and food operations with student programs across business systems and other functions.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Systems analysis",
+          "Data validation",
+          "Reporting",
+          "Business software",
+          "QA/testing",
+          "Process improvement"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.grimmway.com/",
+        "careers": "https://careers.grimmwayproduce.com/careers-home",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "open_student_role_reported",
+        "checkedAt": "2026-11-13",
+        "note": "Summer 2027 Business Systems Internship surfaced as active; verify live acceptance and requirements on the company portal. Reported pay came from an aggregator and was not confirmed on the employer posting."
+      },
+      "openings": [
+        {
+          "id": "business-systems-internship---summer-2027",
+          "title": "Business Systems Internship - Summer 2027",
+          "roleType": "internship",
+          "status": "open_reported_verify_live",
+          "location": "Arvin / Bakersfield area",
+          "studentSuitability": "student_role",
+          "experienceRequirements": null,
+          "educationRequirements": "Undergraduate, post-graduate, and graduate students in relevant fields",
+          "skills": ["Business systems", "Data", "Reporting", "Systems analysis", "QA/testing"],
+          "workArrangement": null,
+          "pay": {
+            "min": 18.25,
+            "max": 22.75,
+            "currency": "USD",
+            "period": "hour",
+            "verification": "aggregator_reported_unconfirmed"
+          },
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://careers.grimmwayproduce.com/careers-home",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "The pay range was reported by an aggregator; confirm pay and exact role requirements on the live company posting.",
+          "sources": [
+            "https://careers.grimmwayproduce.com/studentprograms",
+            "https://careers.grimmwayproduce.com/careers-home"
+          ]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Grimmway student programs",
+          "url": "https://careers.grimmwayproduce.com/studentprograms",
+          "sourceType": "company_program",
+          "checkedAt": "2026-11-13",
+          "supports": ["student_program", "internship"]
+        },
+        {
+          "label": "Grimmway careers",
+          "url": "https://careers.grimmwayproduce.com/careers-home",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["application_route"]
+        }
+      ]
+    },
+    {
+      "id": "a-c-electric",
+      "name": "A-C Electric Company",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "headquarters",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Electrical construction", "Software", "IT"],
+      "description": "Electrical construction contractor with recurring software development and IT internship programs.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Custom applications",
+          "Integrations",
+          "Data processing",
+          "API documentation",
+          "IT support"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.a-celectric.com/",
+        "careers": "https://www.a-celectric.com/careers/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "closed_or_expired",
+        "checkedAt": "2026-11-13",
+        "note": "2027 Software Development Internship reportedly closed October 15, 2026; 2027 IT internship closed October 3. Recheck the next cycle."
+      },
+      "openings": [
+        {
+          "id": "software-development-internship-2027",
+          "title": "Software Development Internship 2027",
+          "roleType": "internship",
+          "status": "closed_at_snapshot",
+          "location": "Bakersfield, CA",
+          "studentSuitability": "student_role_next_cycle",
+          "experienceRequirements": "10 weeks full-time; GPA and technical project preferences were described",
+          "educationRequirements": "Current college enrollment; desired majors included CS, software engineering, IT, or CIS",
+          "skills": ["Custom apps", "Integrations", "Data processing", "APIs"],
+          "workArrangement": null,
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": null,
+          "checkedAt": "2026-11-13",
+          "closedDate": "2026-10-15",
+          "notes": "Posting-specific source was a job-board page not linked in the report; company careers page confirms an ongoing internship program.",
+          "sources": ["https://www.a-celectric.com/careers/"]
+        },
+        {
+          "id": "it-internship-2027",
+          "title": "IT Internship 2027",
+          "roleType": "internship",
+          "status": "closed_at_snapshot",
+          "location": "Bakersfield, CA",
+          "studentSuitability": "student_role_next_cycle",
+          "experienceRequirements": null,
+          "educationRequirements": "Requirements for the next cycle need rechecking",
+          "skills": ["IT support"],
+          "workArrangement": null,
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://www.a-celectric.com/careers/",
+          "checkedAt": "2026-11-13",
+          "closedDate": "2026-10-03",
+          "notes": "Listing reportedly closed; recheck next cycle.",
+          "sources": ["https://www.a-celectric.com/careers/"]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "A-C Electric careers and internship program",
+          "url": "https://www.a-celectric.com/careers/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["internship_program", "application_route"]
+        }
+      ]
+    },
+    {
+      "id": "chevron",
+      "name": "Chevron",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "operations",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Energy", "Operations technology"],
+      "description": "Established energy employer with Kern operations.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Energy systems",
+          "Operations technology",
+          "Data",
+          "Controls",
+          "Cybersecurity"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.chevron.com/",
+        "careers": "https://careers.chevron.com/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "no_relevant_student_role",
+        "checkedAt": "2026-11-13",
+        "note": "Official location search returned zero Bakersfield intern jobs at the report check. Broaden future searches to IT, data, automation, operations technology, and engineering."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Chevron careers",
+          "url": "https://careers.chevron.com/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["careers"]
+        },
+        {
+          "label": "Bakersfield internship search",
+          "url": "https://careers.chevron.com/employment/bakersfield-intern-jobs/35016/8306496/6252001-5332921-5362932-5325738/4",
+          "sourceType": "company_job_search",
+          "checkedAt": "2026-11-13",
+          "supports": ["no_Bakersfield_intern_results"]
+        }
+      ]
+    },
+    {
+      "id": "pge",
+      "name": "Pacific Gas and Electric (PG&E)",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "service_area_and_jobs",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Utilities", "Energy", "Infrastructure"],
+      "description": "Established utility with Bakersfield listings and a county service area.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "IT",
+          "Data systems",
+          "Network operations",
+          "Automation",
+          "Security",
+          "Engineering"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.pge.com/",
+        "careers": "https://careers.pge.com/go/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "no_relevant_student_role",
+        "checkedAt": "2026-11-13",
+        "note": "Several Bakersfield listings appeared, but no student-level CS/ML internship was confirmed in reviewed pages. Recheck location and early-career filters."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "PG&E careers search",
+          "url": "https://careers.pge.com/go/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["local_listings", "career_search"]
+        }
+      ]
+    },
+    {
+      "id": "halliburton",
+      "name": "Halliburton",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Energy services", "Engineering"],
+      "description": "Established energy-services employer; possible exposure to engineering software and field technology.",
+      "potentialStudentFit": {
+        "skillAreas": ["Data analysis", "Business systems", "Field technology"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.halliburton.com/",
+        "careers": "https://careers.halliburton.com/search-jobs",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "open_nonstudent_role",
+        "checkedAt": "2026-11-13",
+        "note": "A Technical Professional (Associate-Senior) - Cementing listing surfaced in Bakersfield. It is technical operations/engineering, not a CS internship."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Halliburton careers search",
+          "url": "https://careers.halliburton.com/search-jobs",
+          "sourceType": "company_job_search",
+          "checkedAt": "2026-11-13",
+          "supports": ["Bakersfield_professional_role"]
+        }
+      ]
+    },
+    {
+      "id": "california-resources-corporation",
+      "name": "California Resources Corporation (CRC)",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "operations",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Energy", "Carbon management", "Geoscience"],
+      "description": "Established energy and carbon-management company with Kern operations.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Data engineering",
+          "Analytics",
+          "GIS",
+          "Software",
+          "Controls",
+          "Industrial systems"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.crc.com/",
+        "careers": "https://www.crc.com/careers",
+        "contact": "mailto:CRCRecruiting@crc.com"
+      },
+      "roleSearch": {
+        "status": "no_relevant_student_role",
+        "checkedAt": "2026-11-13",
+        "note": "No specific local CS/ML student opening confirmed. Careers portal and recruiting contact are monitoring routes."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "CRC careers and recruiting contact",
+          "url": "https://www.crc.com/careers",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["careers", "recruiting_contact"]
+        }
+      ]
+    },
+    {
+      "id": "kern-energy",
+      "name": "Kern Energy",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Refining", "Energy", "Clean fuels"],
+      "description": "Established refinery and clean-fuels operator.",
+      "potentialStudentFit": {
+        "skillAreas": ["IT", "Cybersecurity", "Industrial control systems", "Data"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.kernenergy.com/",
+        "careers": "https://www.kernenergy.com/employment/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "no_relevant_student_role",
+        "checkedAt": "2026-11-13",
+        "note": "Careers page is active, but no student software, ML, or data internship was verified. Recent IT leadership jobs were not student roles."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Kern Energy employment",
+          "url": "https://www.kernenergy.com/employment/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["careers", "no_student_role_verified"]
+        }
+      ]
+    },
+    {
+      "id": "bolthouse-farms",
+      "name": "Bolthouse Farms",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Agriculture", "Food", "Distribution"],
+      "description": "Established agriculture and food-processing employer.",
+      "potentialStudentFit": {
+        "skillAreas": ["Analytics", "ERP", "IT", "Supply-chain software", "Automation"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.bolthouse.com/",
+        "careers": "https://www.bolthouse.com/jobs/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "no_relevant_student_role",
+        "checkedAt": "2026-11-13",
+        "note": "No specific CS/ML internship verified. Monitor the official job portal with IT, analytics, systems, automation, and intern searches."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Bolthouse Farms jobs",
+          "url": "https://www.bolthouse.com/jobs/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["careers", "job_search"]
+        }
+      ]
+    },
+    {
+      "id": "adventist-health-bakersfield",
+      "name": "Adventist Health Bakersfield",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Healthcare"],
+      "description": "Established regional healthcare provider with local careers listings.",
+      "potentialStudentFit": {
+        "skillAreas": ["Health IT", "Analytics", "Data quality", "Security", "Application support"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.adventisthealth.org/",
+        "careers": "https://www.adventisthealth.org/careers/our-locations/central-california/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "no_relevant_student_role",
+        "checkedAt": "2026-11-13",
+        "note": "Bakersfield roles were listed, but no current CS/ML internship or software opening was verified. Search systemwide for data, application analyst, IT, and internship roles."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Adventist Health Central California careers",
+          "url": "https://www.adventisthealth.org/careers/our-locations/central-california/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["local_roles", "career_search"]
+        }
+      ]
+    },
+    {
+      "id": "county-of-kern",
+      "name": "The County of Kern",
+      "companyType": "public_employer",
+      "localConnection": {
+        "type": "countywide_employer",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Public sector", "Government"],
+      "description": "County employer with enterprise applications, IT infrastructure, data, GIS, cybersecurity, and digital services.",
+      "potentialStudentFit": {
+        "skillAreas": ["IT", "Data", "GIS", "Cybersecurity", "Enterprise applications"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.kerncounty.com/",
+        "careers": "https://www.kerncounty.com/careers",
+        "contact": "https://www.governmentjobs.com/careers/kernco/"
+      },
+      "roleSearch": {
+        "status": "no_specific_student_role",
+        "checkedAt": "2026-11-13",
+        "note": "No specific CS internship was confirmed. Monitor analyst, IT, GIS, systems, and extra-help/temporary categories; minimum qualifications can be strict."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Kern County careers",
+          "url": "https://www.kerncounty.com/careers",
+          "sourceType": "public_employer_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["careers"]
+        },
+        {
+          "label": "Kern County job board",
+          "url": "https://www.governmentjobs.com/careers/kernco/",
+          "sourceType": "public_employer_job_board",
+          "checkedAt": "2026-11-13",
+          "supports": ["openings", "job_search"]
+        }
+      ]
+    },
+    {
+      "id": "scaled-composites",
+      "name": "Scaled Composites",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Mojave",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Aerospace", "Flight test"],
+      "description": "Established aircraft design, construction, and flight-test company.",
+      "potentialStudentFit": {
+        "skillAreas": ["Engineering software", "Test systems", "Flight science", "Data"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://scaled.com/",
+        "careers": "https://scaled.com/careers/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "closed_or_expired",
+        "checkedAt": "2026-11-13",
+        "note": "Paid 10-12 week Summer 2027 internship applications were in review/closed on October 16, 2026. Program targets engineering or flight-sciences students; monitor next cycle."
+      },
+      "openings": [
+        {
+          "id": "summer-2027-internship-program",
+          "title": "Summer 2027 Internship Program",
+          "roleType": "internship",
+          "status": "closed_at_snapshot",
+          "location": "Mojave, CA",
+          "studentSuitability": "student_role_next_cycle",
+          "experienceRequirements": "Self-motivated, independent, interested in aviation; exact qualifications vary",
+          "educationRequirements": "Engineering or flight-sciences student",
+          "skills": [],
+          "workArrangement": "Paid, 10-12 weeks",
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://scaled.com/internship/",
+          "checkedAt": "2026-11-13",
+          "closedDate": "2026-10-16",
+          "notes": "Applications were in review/closed at the report check; monitor the next cycle.",
+          "sources": ["https://scaled.com/internship/"]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Scaled Composites internship program",
+          "url": "https://scaled.com/internship/",
+          "sourceType": "company_program",
+          "checkedAt": "2026-11-13",
+          "supports": ["internship", "duration", "eligibility"]
+        },
+        {
+          "label": "Scaled Composites careers",
+          "url": "https://scaled.com/careers/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["careers"]
+        }
+      ]
+    },
+    {
+      "id": "virgin-galactic",
+      "name": "Virgin Galactic",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Mojave",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Aerospace", "Flight systems", "Propulsion"],
+      "description": "Aerospace company with Mojave flight systems, propulsion, test operations, software, and data work.",
+      "potentialStudentFit": {
+        "skillAreas": ["Software", "Avionics", "IT", "Data", "Test operations"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.virgingalactic.com/",
+        "careers": "https://vgcareers.virgingalactic.com/global/en/mojave",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "open_nonstudent_roles",
+        "checkedAt": "2026-11-13",
+        "note": "Several Mojave engineering/technician postings appeared current; no CS/ML internship verified. Example role is an experienced propulsion test technician."
+      },
+      "openings": [
+        {
+          "id": "lead-propulsion-test-technician-(example)",
+          "title": "Lead Propulsion Test Technician (example)",
+          "roleType": "technician",
+          "status": "open_at_snapshot",
+          "location": "Mojave, CA",
+          "studentSuitability": "professional_not_student",
+          "experienceRequirements": null,
+          "educationRequirements": null,
+          "skills": ["Propulsion testing"],
+          "workArrangement": null,
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://careers.virgingalactic.com/job/Mojave-Lead%2C-Propulsion-Test-Technician-Cali-93501/1426945200/",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "Example of a current technical role, not a student software opening.",
+          "sources": [
+            "https://careers.virgingalactic.com/job/Mojave-Lead%2C-Propulsion-Test-Technician-Cali-93501/1426945200/"
+          ]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Virgin Galactic Mojave careers",
+          "url": "https://vgcareers.virgingalactic.com/global/en/mojave",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["local_roles"]
+        },
+        {
+          "label": "Lead Propulsion Test Technician example",
+          "url": "https://careers.virgingalactic.com/job/Mojave-Lead%2C-Propulsion-Test-Technician-Cali-93501/1426945200/",
+          "sourceType": "job_posting",
+          "checkedAt": "2026-11-13",
+          "supports": ["professional_role", "location"]
+        }
+      ]
+    },
+    {
+      "id": "impulse-space",
+      "name": "Impulse Space",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "test_facility",
+        "city": "Mojave",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Space technology", "Aerospace", "Propulsion"],
+      "description": "Space technology company with a Mojave test facility focused on propulsion testing.",
+      "potentialStudentFit": {
+        "skillAreas": ["Automation", "Controls", "Data acquisition", "Test engineering"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.impulsespace.com/",
+        "careers": "https://www.impulsespace.com/careers",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "open_nonstudent_roles",
+        "checkedAt": "2026-11-13",
+        "note": "Automation & Controls Specialist and Ground Support Equipment Engineer postings appeared for Mojave. No student internship was confirmed; requirements need role-by-role review."
+      },
+      "openings": [
+        {
+          "id": "automation-and-controls-specialist",
+          "title": "Automation & Controls Specialist",
+          "roleType": "full_time",
+          "status": "open_at_snapshot",
+          "location": "Mojave, CA",
+          "studentSuitability": "professional_role_requirements_unconfirmed",
+          "experienceRequirements": null,
+          "educationRequirements": null,
+          "skills": ["Automation", "Controls"],
+          "workArrangement": null,
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://www.impulsespace.com/careers",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "Professional-level posting surfaced; check the current listing for education and experience.",
+          "sources": ["https://www.impulsespace.com/careers"]
+        },
+        {
+          "id": "ground-support-equipment-engineer",
+          "title": "Ground Support Equipment Engineer",
+          "roleType": "full_time",
+          "status": "open_at_snapshot",
+          "location": "Mojave, CA",
+          "studentSuitability": "professional_role_requirements_unconfirmed",
+          "experienceRequirements": null,
+          "educationRequirements": null,
+          "skills": ["Engineering", "Ground support equipment"],
+          "workArrangement": null,
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://www.impulsespace.com/careers",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "Professional-level posting surfaced; check the current listing for education and experience.",
+          "sources": ["https://www.impulsespace.com/careers"]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Impulse Space careers",
+          "url": "https://www.impulsespace.com/careers",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["local_roles"]
+        },
+        {
+          "label": "Impulse Space Mojave facility",
+          "url": "https://www.impulsespace.com/mojave",
+          "sourceType": "company_location",
+          "checkedAt": "2026-11-13",
+          "supports": ["Mojave_facility"]
+        }
+      ]
+    },
+    {
+      "id": "nextera-north-sky-river",
+      "name": "NextEra Energy - North Sky River Wind",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "project_site",
+        "city": "Tehachapi",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Renewable energy", "Wind power"],
+      "description": "Established wind-generation operator; local work may expose students to sensors, telemetry, reliability data, asset systems, and industrial controls.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Sensors",
+          "Telemetry",
+          "Reliability data",
+          "Asset systems",
+          "Industrial controls"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.nexteraenergy.com/",
+        "careers": "https://jobs.nexteraenergy.com/job/Cantil-Associate-Wind-Technician-at-North-Sky-River-in-Tehachapi%2C-CA-CA-93519/1450398700/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "open_nonstudent_role",
+        "checkedAt": "2026-11-13",
+        "note": "Associate Wind Technician was listed as an entry-level local role; it is not a software position. Confirm physical, safety, and training requirements."
+      },
+      "openings": [
+        {
+          "id": "associate-wind-technician---north-sky-river",
+          "title": "Associate Wind Technician - North Sky River",
+          "roleType": "technician",
+          "status": "open_at_snapshot",
+          "location": "Tehachapi, CA",
+          "studentSuitability": "entry_level_nonsoftware",
+          "experienceRequirements": "Entry-level; confirm training and physical requirements",
+          "educationRequirements": null,
+          "skills": ["Wind-farm operations", "Maintenance"],
+          "workArrangement": null,
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://jobs.nexteraenergy.com/job/Cantil-Associate-Wind-Technician-at-North-Sky-River-in-Tehachapi%2C-CA-CA-93519/1450398700/",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "Not a software role.",
+          "sources": [
+            "https://jobs.nexteraenergy.com/job/Cantil-Associate-Wind-Technician-at-North-Sky-River-in-Tehachapi%2C-CA-CA-93519/1450398700/"
+          ]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Associate Wind Technician posting",
+          "url": "https://jobs.nexteraenergy.com/job/Cantil-Associate-Wind-Technician-at-North-Sky-River-in-Tehachapi%2C-CA-CA-93519/1450398700/",
+          "sourceType": "job_posting",
+          "checkedAt": "2026-11-13",
+          "supports": ["role", "location", "entry_level_status"]
+        }
+      ]
+    },
+    {
+      "id": "sigma-defense",
+      "name": "Sigma Defense",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Ridgecrest",
+        "county": "Kern",
+        "state": "CA",
+        "note": "Role is associated with NAWS China Lake."
+      },
+      "industry": ["Defense", "Software", "Radar"],
+      "description": "Defense contractor working on radar, real-time software, data filtering, and test/evaluation systems.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "C++",
+          "Linux",
+          "Real-time software",
+          "Data filtering",
+          "Test and evaluation"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://sigmadefense.com/",
+        "careers": "https://apply.workable.com/sigmadefense/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "open_nonstudent_role",
+        "checkedAt": "2026-11-13",
+        "note": "Software Engineer II is full-time and on-site, not a first internship. Requires 2-4 years' experience, U.S. citizenship, Red Hat Linux/C++, and ability to obtain Secret clearance."
+      },
+      "openings": [
+        {
+          "id": "software-engineer-ii---rotr1-radar",
+          "title": "Software Engineer II - ROTR1 Radar",
+          "roleType": "full_time",
+          "status": "open_at_snapshot",
+          "location": "Ridgecrest / NAWS China Lake, CA",
+          "studentSuitability": "professional_not_student",
+          "experienceRequirements": "2-4 years relevant experience",
+          "educationRequirements": "Bachelor's degree",
+          "skills": ["C++", "Red Hat Linux", "Radar", "Real-time software"],
+          "workArrangement": "On-site",
+          "pay": null,
+          "citizenshipOrClearance": "U.S. citizenship; ability to obtain Secret clearance",
+          "applicationUrl": "https://apply.workable.com/sigmadefense/j/BC14FB8B57",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": null,
+          "sources": ["https://apply.workable.com/sigmadefense/j/BC14FB8B57"]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Software Engineer II posting",
+          "url": "https://apply.workable.com/sigmadefense/j/BC14FB8B57",
+          "sourceType": "job_posting",
+          "checkedAt": "2026-11-13",
+          "supports": ["role", "requirements", "clearance"]
+        },
+        {
+          "label": "Sigma Defense openings",
+          "url": "https://apply.workable.com/sigmadefense/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["careers"]
+        }
+      ]
+    },
+    {
+      "id": "dcs-corporation",
+      "name": "DCS Corporation",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Ridgecrest",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Defense", "Software testing", "Engineering"],
+      "description": "Defense contractor with web application testing and software engineering work.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Web apps",
+          "Application security",
+          "Test automation",
+          "CI/CD",
+          "JavaScript",
+          "Python"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.dcscorp.com/",
+        "careers": "https://www.dcscorp.com/careers/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "open_nonstudent_role",
+        "checkedAt": "2026-11-13",
+        "note": "Web Application Test Engineer was live at the report check, on-site, and not advertised as an internship. Student eligibility was not stated."
+      },
+      "openings": [
+        {
+          "id": "web-application-test-engineer",
+          "title": "Web Application Test Engineer",
+          "roleType": "full_time",
+          "status": "open_at_snapshot",
+          "location": "Ridgecrest, CA",
+          "studentSuitability": "student_eligibility_not_stated",
+          "experienceRequirements": "Hands-on software testing, TDD, test automation, web architecture, and Agile/DevOps familiarity",
+          "educationRequirements": null,
+          "skills": ["Playwright", "JavaScript", "Python", "CI/CD", "Test automation"],
+          "workArrangement": "On-site",
+          "pay": {
+            "min": 70310,
+            "max": 102961,
+            "currency": "USD",
+            "period": "year",
+            "verification": "posting"
+          },
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://phh.tbe.taleo.net/phh04/ats/careers/v2/viewRequisition?cws=44&org=DCSCORP2&rid=8443",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": null,
+          "sources": [
+            "https://phh.tbe.taleo.net/phh04/ats/careers/v2/viewRequisition?cws=44&org=DCSCORP2&rid=8443"
+          ]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Web Application Test Engineer posting",
+          "url": "https://phh.tbe.taleo.net/phh04/ats/careers/v2/viewRequisition?cws=44&org=DCSCORP2&rid=8443",
+          "sourceType": "job_posting",
+          "checkedAt": "2026-11-13",
+          "supports": ["role", "salary", "requirements"]
+        },
+        {
+          "label": "DCS careers",
+          "url": "https://www.dcscorp.com/careers/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["careers"]
+        }
+      ]
+    },
+    {
+      "id": "crl-technologies",
+      "name": "CRL Technologies",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Ridgecrest",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Defense engineering", "Avionics", "Software"],
+      "description": "Defense engineering and technical-services firm working in avionics R&D, systems integration, requirements, and test-data analysis.",
+      "potentialStudentFit": {
+        "skillAreas": ["Software", "Systems integration", "Requirements", "Test-data analysis"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://crltechnologies.com/",
+        "careers": "https://crltechnologies.com/careers/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "open_nonstudent_role",
+        "checkedAt": "2026-11-13",
+        "note": "Mid-Level Software Engineer #TS999 surfaced as on-site and not student-level; verify the role on the careers portal."
+      },
+      "openings": [
+        {
+          "id": "mid-level-software-engineer-#ts999",
+          "title": "Mid-Level Software Engineer #TS999",
+          "roleType": "full_time",
+          "status": "open_reported_verify_live",
+          "location": "Ridgecrest, CA",
+          "studentSuitability": "professional_not_student",
+          "experienceRequirements": "At least 5 years software engineering; 5 years DoD systems desired",
+          "educationRequirements": "BS in CS, software, or computer engineering",
+          "skills": [],
+          "workArrangement": "On-site",
+          "pay": null,
+          "citizenshipOrClearance": "Final DoD Top Secret clearance",
+          "applicationUrl": "https://crltechnologies.com/careers/",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "Current role details surfaced in search; confirm on employer careers page.",
+          "sources": ["https://crltechnologies.com/careers/"]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "CRL Technologies careers",
+          "url": "https://crltechnologies.com/careers/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["role_search"]
+        },
+        {
+          "label": "CRL Technologies company site",
+          "url": "https://crltechnologies.com/",
+          "sourceType": "company_website",
+          "checkedAt": "2026-11-13",
+          "supports": ["company_description"]
+        }
+      ]
+    },
+    {
+      "id": "saalex",
+      "name": "Saalex Corporation",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Ridgecrest",
+        "county": "Kern",
+        "state": "CA",
+        "note": "Report also associates roles with NAWS China Lake."
+      },
+      "industry": ["Defense technology", "IT", "Engineering"],
+      "description": "Defense technology integrator working in software modernization, IT, analytics, cybersecurity, engineering, and range operations.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Backend",
+          "Infrastructure",
+          "Data",
+          "Cybersecurity",
+          "Software modernization"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://saalex.com/",
+        "careers": "https://apply.workable.com/saalex/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "open_nonstudent_roles",
+        "checkedAt": "2026-11-13",
+        "note": "OpenShift Platform Engineer and Engineering Technician IV appeared in Ridgecrest listings. No student internship confirmed; platform role was not identified as entry-level."
+      },
+      "openings": [
+        {
+          "id": "openshift-platform-engineer",
+          "title": "OpenShift Platform Engineer",
+          "roleType": "full_time",
+          "status": "open_at_snapshot",
+          "location": "Ridgecrest / NAWS China Lake, CA",
+          "studentSuitability": "professional_role_not_identified_as_entry_level",
+          "experienceRequirements": null,
+          "educationRequirements": null,
+          "skills": ["OpenShift", "Platform engineering"],
+          "workArrangement": null,
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://apply.workable.com/saalex/",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "No student internship confirmed; check current listing for experience requirements.",
+          "sources": ["https://apply.workable.com/saalex/"]
+        },
+        {
+          "id": "engineering-technician-iv",
+          "title": "Engineering Technician IV",
+          "roleType": "full_time",
+          "status": "open_at_snapshot",
+          "location": "Ridgecrest / NAWS China Lake, CA",
+          "studentSuitability": "professional_role_requirements_unconfirmed",
+          "experienceRequirements": null,
+          "educationRequirements": null,
+          "skills": ["Engineering technology"],
+          "workArrangement": null,
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://apply.workable.com/saalex/",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "Check current listing for degree and experience requirements.",
+          "sources": ["https://apply.workable.com/saalex/"]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Saalex openings",
+          "url": "https://apply.workable.com/saalex/",
+          "sourceType": "company_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["local_roles"]
+        },
+        {
+          "label": "Saalex company site",
+          "url": "https://saalex.com/",
+          "sourceType": "company_website",
+          "checkedAt": "2026-11-13",
+          "supports": ["company_description"]
+        }
+      ]
+    },
+    {
+      "id": "navair-china-lake",
+      "name": "NAVAIR - Naval Air Weapons Station China Lake",
+      "companyType": "public_employer",
+      "localConnection": {
+        "type": "major_technical_site",
+        "city": "Ridgecrest",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Federal government", "Defense", "Aerospace"],
+      "description": "Federal civilian employer and major local technical site for software engineering, test/evaluation, electronic warfare, sensors, data, and systems engineering.",
+      "potentialStudentFit": {
+        "skillAreas": [
+          "Software engineering",
+          "Test and evaluation",
+          "Electronic warfare",
+          "Sensors",
+          "Data",
+          "Systems engineering"
+        ],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://jobs.navair.navy.mil/China-Lake-CA",
+        "careers": "https://www.usajobs.gov/",
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "no_specific_student_role",
+        "checkedAt": "2026-11-13",
+        "note": "Official site describes local technical work; no specific student software opening confirmed. Federal roles may require citizenship, degree transcripts, or clearance."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "NAVAIR China Lake location/careers",
+          "url": "https://jobs.navair.navy.mil/China-Lake-CA",
+          "sourceType": "public_employer_careers",
+          "checkedAt": "2026-11-13",
+          "supports": ["location", "technical_work"]
+        },
+        {
+          "label": "USAJOBS",
+          "url": "https://www.usajobs.gov/",
+          "sourceType": "government_job_board",
+          "checkedAt": "2026-11-13",
+          "supports": ["federal_openings"]
+        }
+      ]
+    },
+    {
+      "id": "cornerstone-engineering",
+      "name": "Cornerstone Engineering Inc.",
+      "companyType": "established_employer",
+      "localConnection": {
+        "type": "employer_location_and_program_partner",
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Engineering", "Energy"],
+      "description": "Established engineering company named as a planned KEEP participant.",
+      "potentialStudentFit": {
+        "skillAreas": ["Instrumentation", "Data", "Controls", "Software", "Project systems"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://cornerstoneengineering.com/",
+        "careers": null,
+        "contact": null
+      },
+      "roleSearch": {
+        "status": "program_announced_no_specific_role",
+        "checkedAt": "2026-11-13",
+        "note": "KEEP participation was announced, but specific internships and role titles were not listed."
+      },
+      "openings": [],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "Cornerstone Engineering",
+          "url": "https://cornerstoneengineering.com/",
+          "sourceType": "company_website",
+          "checkedAt": "2026-11-13",
+          "supports": ["company_identity"]
+        },
+        {
+          "label": "CSUB KEEP announcement",
+          "url": "https://news.csub.edu/new-workforce-program-to-provide-stem-internships",
+          "sourceType": "program_announcement",
+          "checkedAt": "2026-11-13",
+          "supports": ["KEEP_participation"]
+        }
+      ]
+    },
+    {
+      "id": "city-of-wasco",
+      "name": "City of Wasco",
+      "companyType": "public_employer",
+      "localConnection": {
+        "type": "employer_location",
+        "city": "Wasco",
+        "county": "Kern",
+        "state": "CA"
+      },
+      "industry": ["Public sector", "Municipal services", "IT"],
+      "description": "Public employer with municipal IT work in support, device configuration, cybersecurity, systems, and applications.",
+      "potentialStudentFit": {
+        "skillAreas": ["IT support", "Cybersecurity", "Systems", "Applications"],
+        "note": "Potential fit is an editorial inference from the company's work, not a claim about an opening."
+      },
+      "publicLinks": {
+        "website": "https://www.cityofwasco.org/",
+        "careers": null,
+        "contact": "https://www.cityofwasco.org/"
+      },
+      "roleSearch": {
+        "status": "closed_or_expired",
+        "checkedAt": "2026-11-13",
+        "note": "A Summer 2026 IT internship was authorized in April 2026 through KIC; it is not currently open. Ask the City or KIC about the next cycle."
+      },
+      "openings": [
+        {
+          "id": "summer-2026-it-internship",
+          "title": "Summer 2026 IT Internship",
+          "roleType": "internship",
+          "status": "closed_at_snapshot",
+          "location": "Wasco, CA",
+          "studentSuitability": "student_role_next_cycle",
+          "experienceRequirements": null,
+          "educationRequirements": null,
+          "skills": [],
+          "workArrangement": "Temporary/summer",
+          "pay": null,
+          "citizenshipOrClearance": null,
+          "applicationUrl": "https://www.cityofwasco.org/",
+          "checkedAt": "2026-11-13",
+          "closedDate": null,
+          "notes": "Council agenda authorized the internship in April 2026; next-cycle requirements were not verified.",
+          "sources": ["https://www.cityofwasco.org/"]
+        }
+      ],
+      "studentPrograms": [],
+      "sources": [
+        {
+          "label": "City of Wasco",
+          "url": "https://www.cityofwasco.org/",
+          "sourceType": "public_employer_website",
+          "checkedAt": "2026-11-13",
+          "supports": ["employer", "contact_route"]
+        },
+        {
+          "label": "Kern Intern Connections",
+          "url": "https://kernintern.com/",
+          "sourceType": "student_program",
+          "checkedAt": "2026-11-13",
+          "supports": ["internship_pipeline"]
+        }
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "id": "keep",
+      "name": "Kern Engineering to Energy Pipeline (KEEP)",
+      "programType": "paid_internship_pipeline",
+      "localConnection": "Countywide, with placements at Kern energy employers",
+      "status": "announced_not_yet_open",
+      "announcedDate": "2026-11-03",
+      "plannedInternships": 50,
+      "schedule": "Summer 2027",
+      "studentFit": "Students pursuing energy-related degrees; CS may fit where roles use data, software, controls, or IT.",
+      "knownEmployerPartners": ["Cornerstone Engineering Inc."],
+      "applicationUrl": null,
+      "openPositions": [],
+      "note": "The report found no application portal, full employer list, position titles, or exact deadlines yet. Follow CSUB and ETR updates.",
+      "checkedAt": "2026-11-13",
+      "sources": [
+        {
+          "label": "CSUB KEEP announcement",
+          "url": "https://news.csub.edu/new-workforce-program-to-provide-stem-internships",
+          "sourceType": "program_announcement",
+          "checkedAt": "2026-11-13",
+          "supports": ["announcement", "planned_internships", "eligibility"]
+        },
+        {
+          "label": "Energy Training Resources",
+          "url": "https://www.etr.org/",
+          "sourceType": "program_partner",
+          "checkedAt": "2026-11-13",
+          "supports": ["program_partner"]
+        }
+      ],
+      "paid": true,
+      "workArrangement": "Full-time"
+    },
+    {
+      "id": "kern-intern-connections",
+      "name": "Kern Intern Connections (KIC)",
+      "programType": "regional_student_employer_pipeline",
+      "localConnection": "Countywide",
+      "status": "applications_open_no_positions_available_at_snapshot",
+      "studentFit": "Connects local students and Kern employers for STEM-based opportunities; program eligibility varies.",
+      "studentApplicationUrl": "https://kernintern.com/apply",
+      "employerApplicationUrl": "https://kernintern.com/",
+      "publicPhone": "661-862-5157",
+      "openPositions": [],
+      "note": "Applications were described as open year-round, but the page showed no available positions at the report check. This is a pipeline, not an employer.",
+      "checkedAt": "2026-11-13",
+      "sources": [
+        {
+          "label": "KIC student application",
+          "url": "https://kernintern.com/apply",
+          "sourceType": "program_application",
+          "checkedAt": "2026-11-13",
+          "supports": ["student_application", "position_status"]
+        },
+        {
+          "label": "KIC program",
+          "url": "https://kernintern.com/",
+          "sourceType": "program_website",
+          "checkedAt": "2026-11-13",
+          "supports": ["program", "employer_application", "contact"]
+        }
+      ]
+    }
+  ],
+  "ecosystemResources": [
+    {
+      "id": "kern-venture-group",
+      "name": "Kern Venture Group",
+      "resourceType": "startup_investor_and_verification_channel",
+      "localConnection": {
+        "city": "Bakersfield",
+        "county": "Kern",
+        "state": "CA",
+        "type": "headquarters"
+      },
+      "status": "resource_not_employer_listing",
+      "note": "A Bakersfield investment group. A portfolio company is not automatically a Kern employer; verify its own location, careers page, and active status.",
+      "links": {
+        "portfolio": "https://www.kernventuregroup.com/portfolio",
+        "contact": "https://www.kernventuregroup.com/contact"
+      },
+      "checkedAt": "2026-11-13",
+      "sources": [
+        {
+          "label": "Kern Venture Group portfolio",
+          "url": "https://www.kernventuregroup.com/portfolio",
+          "sourceType": "organization_portfolio",
+          "checkedAt": "2026-11-13",
+          "supports": ["portfolio"]
+        },
+        {
+          "label": "Kern Venture Group contact",
+          "url": "https://www.kernventuregroup.com/contact",
+          "sourceType": "organization_contact",
+          "checkedAt": "2026-11-13",
+          "supports": ["contact"]
+        }
+      ]
+    },
+    {
+      "id": "mojave-air-space-port",
+      "name": "Mojave Air & Space Port",
+      "resourceType": "aerospace_ecosystem_connector",
+      "localConnection": {
+        "city": "Mojave",
+        "county": "Kern",
+        "state": "CA",
+        "type": "ecosystem_site"
+      },
+      "status": "resource_not_employer_listing",
+      "note": "Hosts aerospace and aviation organizations. Use tenant and event pages to identify employers; apply to a tenant unless the airport posts its own role.",
+      "links": {
+        "website": "https://www.mojaveairport.com/",
+        "FAA_spaceport_listing": "https://www.faa.gov/space/spaceports_by_state"
+      },
+      "checkedAt": "2026-11-13",
+      "sources": [
+        {
+          "label": "Mojave Air & Space Port",
+          "url": "https://www.mojaveairport.com/",
+          "sourceType": "ecosystem_resource",
+          "checkedAt": "2026-11-13",
+          "supports": ["site", "tenants"]
+        },
+        {
+          "label": "FAA spaceports by state",
+          "url": "https://www.faa.gov/space/spaceports_by_state",
+          "sourceType": "government_resource",
+          "checkedAt": "2026-11-13",
+          "supports": ["spaceport_listing"]
+        }
+      ]
+    }
+  ],
+  "verificationQueue": [
+    {
+      "id": "hammerloop-llc",
+      "name": "Hammerloop LLC",
+      "candidateType": "startup_lead",
+      "localConnectionStatus": "needs_confirmation",
+      "knownInformation": "Kern Inclusive Entrepreneurship Hub lists a 50,000 USD grant and describes a bilingual construction-employment platform.",
+      "unverified": ["Kern County office", "active hiring", "current product status"],
+      "includeAsEmployer": false,
+      "nextAction": "Contact the company and verify local operations, product status, and current roles before adding a company card.",
+      "checkedAt": "2026-11-13",
+      "sources": [
+        {
+          "label": "Hammerloop",
+          "url": "https://www.hammerloop.com",
+          "sourceType": "company_website",
+          "checkedAt": "2026-11-13",
+          "supports": ["company_identity"]
+        },
+        {
+          "label": "CalOSBA / Kern Inclusive Entrepreneurship Hub",
+          "url": "https://calosba.ca.gov/funding-grants-incentives/accelerate-california/kern-inclusive-entrepreneurship-hub/",
+          "sourceType": "state_program",
+          "checkedAt": "2026-11-13",
+          "supports": ["grant_award", "venture_description"]
+        }
+      ]
+    },
+    {
+      "id": "mistee-wants-to-know",
+      "name": "MisTee Wants to Know, Inc.",
+      "candidateType": "startup_lead",
+      "localConnectionStatus": "needs_confirmation",
+      "knownInformation": "Kern Inclusive Entrepreneurship Hub lists a 50,000 USD grant for MisTeePRO, a hair-care device.",
+      "unverified": ["Kern-based operations", "active hiring", "technical student roles"],
+      "includeAsEmployer": false,
+      "nextAction": "Verify current operations and roles directly before counting it as a local job lead.",
+      "checkedAt": "2026-11-13",
+      "sources": [
+        {
+          "label": "CalOSBA / Kern Inclusive Entrepreneurship Hub",
+          "url": "https://calosba.ca.gov/funding-grants-incentives/accelerate-california/kern-inclusive-entrepreneurship-hub/",
+          "sourceType": "state_program",
+          "checkedAt": "2026-11-13",
+          "supports": ["grant_award", "venture_description"]
+        }
+      ]
+    }
+  ]
+}
