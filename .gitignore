@@ -1,0 +1,16 @@
+node_modules/
+dist/
+tmp/
+test-results/
+playwright-report/
+.code-review-graph/
+*.tsbuildinfo
+*.local
+.env*
+!.env.example
+resumes/
+uploads/
+__pycache__/
+*.py[cod]
+*.parsed.md
+/resume.md
