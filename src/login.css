@@ -815,3 +815,13 @@
     animation: none;
   }
 }
+.account-details,
+.account-links {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.account-details p {
+  overflow-wrap: anywhere;
+}

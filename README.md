@@ -15,7 +15,7 @@ npm ci
 npm run dev
 ```
 
-Open the localhost URL printed by Vite. On Windows PowerShell, use `npm.cmd` if execution policy blocks `npm.ps1`.
+The command starts both the loopback API and Vite. Open the localhost URL printed by Vite. Accounts and AI are unavailable until their server configuration is supplied; guest tools still work. On Windows PowerShell, use `npm.cmd` if execution policy blocks `npm.ps1`.
 
 ```sh
 npm run build       # Type-check and create dist/
@@ -37,15 +37,13 @@ npm run format:check
 - Use the moon/sun toggle to switch between light and dark themes. The choice survives reloads and can be reset in Privacy controls.
 - Cards tilt with a horizontal drag and fly right when saved or left when passed. Decisions are stored immediately; the animation is only visual. Reduced-motion preferences skip the flight and drag rotation.
 - **My resume** opens an opt-in workspace to import a resume, edit Markdown, preview it, review it, and download `resume.md`. Optional AI cleanup is available only when the local server is configured.
-- **Sign in** opens a frontend-only login preview with email/password validation, show/hide password, sample details, loading feedback, and a guest return path. It never authenticates a user, sends a login request, or creates a session. Inputs are cleared after submission or leaving the page.
+- **Sign in** connects to the real account API when configured. Guest discovery and local resume editing do not require an account.
 
-## Login preview
+## Accounts and authentication
 
-The sign-in entry appears in the desktop header and as a sign-in icon beside the theme/privacy controls on mobile. Use fictional details or **Use example details** to try it. **Preview sign in** simulates a short local loading state, clears the form, and explicitly confirms that the visitor is still a guest. Guest discovery, saved preferences, and the current session resume remain available.
+Sign-in now uses a standalone PostgreSQL-backed API: registration, email verification, password recovery/change, HTTP-only JWT/refresh cookies, logout, and account deletion. Google/GitHub remain disabled placeholders. Without account configuration, guest discovery and local resume tools remain usable.
 
-Google and GitHub buttons are disabled placeholders. Passkeys and email links are listed as possible future choices. No OAuth provider has been selected or connected. Account creation and password recovery are visibly marked for later rather than linked to nonexistent flows.
-
-`src/auth.ts` defines the `AuthAdapter` boundary and a cancelable mock adapter. It ignores the supplied credentials and performs no I/O. Login values remain in component memory only; no login state or token is stored in cookies, localStorage, sessionStorage, URLs, or logs. Real authentication must replace the adapter and add real session/error handling under [#8](https://github.com/GaelCT/LaunchScout/issues/8), with PostgreSQL account data tracked in [#6](https://github.com/GaelCT/LaunchScout/issues/6). The preview must never authorize backend access. This implements the frontend scope of [#7](https://github.com/GaelCT/LaunchScout/issues/7).
+See [setup, session/security policy, and operator commands](docs/security.md) and the [proposed PostgreSQL schema for issue #6](docs/database-schema.md). Only the tables needed for authentication and AI controls are implemented; cross-device collection syncing and reviewed guest import remain #6 work. Signed-in choices stay in memory and do not overwrite guest preferences.
 
 ## Resume workspace
 
@@ -86,32 +84,19 @@ Output defaults to `INPUT.parsed.md`. Use `-o` for a specific `.md` path. Existi
 python -m unittest discover -s tests/python -v
 ```
 
-### Optional AI cleanup setup
+### Protected AI cleanup
 
-Manual editing and downloads need no API key. To enable cleanup locally, copy `.env.example` to `.env.local` and set:
+Manual parsing, editing and downloads need no API key or account. Paid cleanup requires a signed-in, verified account with operator-granted AI access, explicit disclosure/consent, and a configured server-side provider/model/budget. The current provider is still OpenAI; Mistral and Jev remain planned integrations.
 
-```dotenv
-OPENAI_API_KEY=your_api_key
-OPENAI_MODEL=your_selected_model
-```
+The standalone API enforces live session/CSRF checks, input limits, per-account/network limits, shared PostgreSQL spending reservations, concurrency limits, idempotency and a kill switch. No request waits in an unbounded queue. Failures/cancellation preserve original text and conservatively retain any uncertain provider charge. No provider key is bundled or exposed to the browser.
 
-Choose a model supporting the Responses API and Structured Outputs. Restart `npm run dev` after changing configuration. Keep credentials server-side; do not use a `VITE_` prefix. `.env.local` and other real environment files are ignored by Git.
-
-The server reports availability without sending resume content. An AI request requires both the disclosure checkbox and the explicit **Clean up with AI** action. It sends only the editable extracted text through the local server to OpenAI, including any contact information left in that text. The original file, browser preferences, and company data are not sent. Remove personal details in the source editor first if desired.
-
-The request asks for faithful Markdown organization without embellishment, job tailoring, inferred qualifications, or omitted factual content. The API returns schema-constrained Markdown and review warnings; schema validation does not guarantee factual accuracy. AI output is labeled and always requires human review. Failed/canceled requests leave current content unchanged. Deleting or leaving the workspace aborts an in-flight cleanup and ignores late results, but cannot recall a request already received by the provider.
-
-`server/resumeApi.ts` uses the official OpenAI SDK with `store: false`, no automatic retries, a timeout, request-size limits, and one in-flight cleanup per local instance. Application code does not log request content or write resume data to disk. Provider retention rules still apply; see [OpenAI data controls](https://developers.openai.com/api/docs/guides/your-data).
-
-The API is local prototype middleware available in `npm run dev` and `npm run preview`. It rejects non-local hosts and cross-origin submissions. A plain static deployment of `dist/` supports manual import/edit/download but has no AI endpoint. Public deployment requires an authenticated backend with deployment-specific abuse controls; the local middleware is not a public AI service.
-
-This is the first implementation slice of #3. Company-specific AI email generation, outreach goal selection, and tailored resume variants remain follow-up work. The existing non-AI outreach editor stays available. The issue remains open, including its reviewed-company-data dependency.
+See [security setup](docs/security.md) for exact limits, model/pricing configuration, retention, key rotation, cancellation/accounting semantics and operator commands. AI stays off until configured; no live paid request is used by tests. A static deployment supports the local resume workflow, while accounts and paid AI require the separately deployed API under the same HTTPS origin.
 
 The current research snapshot covers Kern County communities. Company listings, student programs, ecosystem resources, and leads awaiting verification are stored as separate data types.
 
 ## Privacy and storage
 
-One origin-scoped browser `localStorage` key, `launchscout.preferences.v1`, contains:
+For guests, one origin-scoped browser `localStorage` key, `launchscout.preferences.v1`, contains:
 
 ```json
 {
@@ -126,7 +111,7 @@ No names, email addresses, resumes, user accounts, or draft content are stored i
 
 Privacy controls clear saved IDs, passed IDs, filters, the appearance preference, and session resume content independently. Clearing everything removes the key, restores the light theme, clears the undo action, and removes session resume content and consent. Clearing browser site data also removes saved preferences. Preferences do not sync between devices or origins. If storage is blocked, the interface stays usable in memory and displays a persistence warning when a write fails. Malformed stored JSON is discarded; unknown IDs, unsupported filters, and invalid themes are sanitized.
 
-There is no telemetry, analytics, external font request, or automatic email sending. The optional resume cleanup endpoint is the only AI integration. The app fetches its own static assets; GitHub, provider-policy links, and future public source links visit third-party sites only when opened. A future hosting provider may maintain its own request logs.
+There is no analytics, external font request, or automatic outreach sending. Account registration/recovery sends only explicitly requested account emails. The backend records content-free security events. The optional resume cleanup endpoint is the only AI integration. The app fetches its own static assets; GitHub, provider-policy links, and future public source links visit third-party sites only when opened. A future hosting provider may maintain its own request logs.
 
 ## Research data and maintenance
 
@@ -143,3 +128,5 @@ Playwright runs the same user flows on desktop and an emulated iPhone viewport u
 The standalone parser has Python unit tests covering PDF/DOCX/TXT/Markdown extraction, formatting, invalid inputs, limits, output protection, and the CLI. They run with socket creation disabled to catch accidental network use. Run them after installing the optional PDF dependency with `python -m unittest discover -s tests/python -v`.
 
 GitHub Actions runs formatting checks, the production build, the Python parser tests, and the browser tests on pushes and pull requests.
+
+Backend security tests: `npm run test:server`. They use TEST_DATABASE_URL when explicitly supplied or start an isolated real PostgreSQL instance otherwise. They include two-process quota enforcement and a real browser/account/database flow. See [security verification](docs/security.md#verification).

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   ArrowUpRight,
@@ -34,6 +34,8 @@ import { useCardMotion } from './useCardMotion';
 import { ResumeWorkspace } from './ResumeWorkspace';
 import type { ResumeDocument } from './resume';
 import { LoginPage } from './LoginPage';
+import { authClient } from './auth';
+import type { Session } from './auth';
 
 type View = 'discover' | 'saved' | 'passed' | 'resume' | 'login';
 type Decision = { id: string; wasSaved: boolean; wasRejected: boolean };
@@ -102,7 +104,10 @@ export default function App() {
   const [initial] = useState(loadPreferences);
   const [preferences, setPreferences] = useState<Preferences>(initial.preferences);
   const [storageError, setStorageError] = useState(initial.error);
-  const [view, setView] = useState<View>('discover');
+  const [view, setView] = useState<View>(authClient.pendingAction() ? 'login' : 'discover');
+  const [session, setSession] = useState<Session | null>(null);
+  const [actionVersion, setActionVersion] = useState(0);
+  const identity = useRef<string | null>(null);
   const [detail, setDetail] = useState<Company | null>(null);
   const [privacy, setPrivacy] = useState(false);
   const [about, setAbout] = useState(false);
@@ -114,11 +119,53 @@ export default function App() {
   const motion = useCardMotion();
   const { suppressClick } = motion;
 
+  useEffect(() => {
+    const unsubscribeAction = authClient.subscribeAction(() => {
+      setView('login');
+      setActionVersion((value) => value + 1);
+    });
+    const unsubscribe = authClient.subscribe((next) => {
+      const id = next?.user.id ?? null;
+      if (identity.current !== id) {
+        identity.current = id;
+        setResume(null);
+        setResumeEnabled(false);
+        setDetail(null);
+        setPrivacy(false);
+        setAbout(false);
+        setUndo(null);
+        setPreferences(
+          id
+            ? { ...emptyPreferences, filters: { ...emptyFilters } }
+            : loadPreferences().preferences,
+        );
+        if (!authClient.pendingAction()) setView('discover');
+        setNotice(
+          id
+            ? 'Signed in. Account collections stay in this session until sync is available.'
+            : 'Signed out. Private session content cleared.',
+        );
+      }
+      setSession(next);
+    });
+    void fetch('/api/auth/config')
+      .then((r) => r.json())
+      .then((value) => {
+        if (value.configured) return authClient.restore();
+      })
+      .catch(() => {});
+    return () => {
+      unsubscribe();
+      unsubscribeAction();
+    };
+  }, []);
+
   useLayoutEffect(() => {
     document.documentElement.dataset.theme = preferences.theme;
   }, [preferences.theme]);
 
   useEffect(() => {
+    if (session) return;
     try {
       if (
         !preferences.saved.length &&
@@ -132,7 +179,7 @@ export default function App() {
     } catch {
       setStorageError(true);
     }
-  }, [preferences]);
+  }, [preferences, session]);
 
   useEffect(() => {
     if (!notice) return;
@@ -305,9 +352,12 @@ export default function App() {
   if (view === 'login') {
     return (
       <LoginPage
+        key={actionVersion}
+        session={session}
         brand={<Brand />}
         themeToggle={themeToggle}
         onBack={() => {
+          authClient.clearAction();
           setView('discover');
           requestAnimationFrame(() =>
             document.querySelector<HTMLHeadingElement>('.page-intro h1')?.focus(),
@@ -371,7 +421,7 @@ export default function App() {
             </button>
             <button className="auth-entry" onClick={() => setView('login')}>
               <LogIn size={15} />
-              Sign in
+              {session ? 'Account' : 'Sign in'}
             </button>
           </div>
         </header>
@@ -386,7 +436,11 @@ export default function App() {
             >
               <ShieldCheck size={22} />
             </button>
-            <button className="auth-entry" aria-label="Sign in" onClick={() => setView('login')}>
+            <button
+              className="auth-entry"
+              aria-label={session ? 'Account' : 'Sign in'}
+              onClick={() => setView('login')}
+            >
               <LogIn size={20} />
             </button>
           </div>
@@ -818,9 +872,8 @@ export default function App() {
           <div className="privacy-intro">
             <ShieldCheck size={30} />
             <p>
-              No account. No tracking. Your saved companies, passed company IDs, and city, industry,
-              and opportunity filters, plus your theme choice, are stored only in this browser’s
-              local storage.
+              Accounts are optional. Guest company preferences stay in this browser’s local storage.
+              Signed-in choices stay in session memory until account syncing is available.
             </p>
           </div>
           <p className="modal-copy">
@@ -885,9 +938,9 @@ export default function App() {
             Clear all local data
           </button>
           <p className="fine-print">
-            Resume text is never put in browser storage. There are no analytics or automatic emails.
-            Downloaded files and clipboard copies must be deleted on your device separately. Opening
-            an external source link will visit that website.
+            Resume text is never put in browser storage. There are no analytics or automatic
+            outreach emails. Downloaded files and clipboard copies must be deleted on your device
+            separately. Opening an external source link will visit that website.
           </p>
         </Modal>
       )}
