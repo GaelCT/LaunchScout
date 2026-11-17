@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import research from '../src/research-data/kern-county.json' with { type: 'json' };
 
 const signIn = (page: Page) =>
   page.getByRole('button', { name: 'Sign in', exact: true }).filter({ visible: true });
@@ -145,7 +146,9 @@ test('guest saved companies and session resume remain available around the login
   await signIn(page).click();
   await page.getByRole('button', { name: 'Keep exploring as a guest' }).click();
   await nav(page, /Saved/).click();
-  await expect(page.getByRole('button', { name: 'View Grove Robotics details' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: `View ${research.companies[0].name} details`, exact: true }),
+  ).toBeVisible();
   await nav(page, /resume/i).click();
   await page.getByRole('checkbox', { name: 'Enable resume workspace' }).check();
   await page.getByRole('button', { name: 'Try a fictional example' }).click();

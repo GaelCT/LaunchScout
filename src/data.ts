@@ -1,298 +1,174 @@
-export type Opportunity = 'Internship' | 'Full-time' | 'Coffee chat';
+import researchData from './research-data/kern-county.json';
+
+export type Opportunity = 'Internship' | 'Full-time' | 'Technical role';
+
+export interface ResearchSource {
+  label: string;
+  url: string;
+  sourceType: string;
+  checkedAt: string;
+  supports: string[];
+}
+
+export interface Opening {
+  id: string;
+  title: string;
+  roleType: string;
+  status: string;
+  location: string | null;
+  studentSuitability: string;
+  experienceRequirements: string | null;
+  educationRequirements: string | null;
+  skills: string[];
+  workArrangement: string | null;
+  pay: {
+    min: number;
+    max: number;
+    currency: string;
+    period: string;
+    verification: string;
+  } | null;
+  citizenshipOrClearance: string | null;
+  applicationUrl: string | null;
+  checkedAt: string;
+  closedDate: string | null;
+  notes: string | null;
+  sources: string[];
+}
 
 export interface Company {
   id: string;
   name: string;
   city: string;
+  companyTypeLabel: string;
   industry: string;
+  industries: string[];
   tagline: string;
   description: string;
   opportunities: Opportunity[];
-  founded: number;
-  team: string;
+  founded: number | null;
+  team: string | null;
   color: string;
   initials: string;
-  verificationDate: string | null;
-  sources: { label: string; url: string }[];
+  verificationDate: string;
+  companyType: string;
+  localConnection: {
+    type: string;
+    city: string | null;
+    county: string;
+    state: string;
+    note?: string;
+  };
+  potentialStudentFit: { skillAreas: string[]; note: string };
+  publicLinks: { website: string | null; careers: string | null; contact: string | null };
+  roleSearch: { status: string; checkedAt: string; note: string };
+  openings: Opening[];
+  studentPrograms: Array<Record<string, unknown>>;
+  sources: ResearchSource[];
 }
 
-// Entirely fictional fixtures. Never present these as reviewed companies or live openings.
-export const companies: Company[] = [
-  {
-    id: 'grove',
-    name: 'Grove Robotics',
-    city: 'Bakersfield',
-    industry: 'AgTech',
-    tagline: 'A little ingenuity. A better harvest.',
-    description:
-      'Building thoughtful farm robotics that help growers spend less time on repetitive tasks and more time caring for their crops.',
-    opportunities: ['Internship', 'Full-time'],
-    founded: 2022,
-    team: '11–20',
-    color: 'sage',
-    initials: 'gr',
-  },
-  {
-    id: 'sol',
-    name: 'Sol Current',
-    city: 'Bakersfield',
-    industry: 'Clean energy',
-    tagline: 'Good energy starts close to home.',
-    description:
-      'Designing neighborhood-scale energy storage to make solar power more useful for local communities.',
-    opportunities: ['Internship'],
-    founded: 2023,
-    team: '2–10',
-    color: 'peach',
-    initials: 'sc',
-  },
-  {
-    id: 'canopy',
-    name: 'Canopy Health',
-    city: 'Visalia',
-    industry: 'HealthTech',
-    tagline: 'Care that reaches a little further.',
-    description:
-      'Creating simple digital tools that connect rural communities with local care teams.',
-    opportunities: ['Full-time', 'Coffee chat'],
-    founded: 2021,
-    team: '11–20',
-    color: 'lavender',
-    initials: 'ch',
-  },
-  {
-    id: 'fieldnote',
-    name: 'Fieldnote Labs',
-    city: 'Delano',
-    industry: 'Software',
-    tagline: 'Less paperwork. More possibility.',
-    description:
-      'Helping independent agricultural businesses turn everyday field notes into useful, organized information.',
-    opportunities: ['Coffee chat'],
-    founded: 2024,
-    team: '2–10',
-    color: 'sand',
-    initials: 'fn',
-  },
-  {
-    id: 'loop',
-    name: 'Loop Materials',
-    city: 'Tulare',
-    industry: 'Climate tech',
-    tagline: 'A fresh start for what comes next.',
-    description:
-      'Exploring practical ways to turn agricultural byproducts into reusable packaging materials.',
-    opportunities: ['Internship', 'Coffee chat'],
-    founded: 2023,
-    team: '2–10',
-    color: 'sage',
-    initials: 'lm',
-  },
-  {
-    id: 'mesa',
-    name: 'Mesa Studio',
-    city: 'Bakersfield',
-    industry: 'Software',
-    tagline: 'Small businesses. Big ideas.',
-    description:
-      'Making approachable scheduling and project tools for independent businesses in the Central Valley.',
-    opportunities: ['Full-time'],
-    founded: 2022,
-    team: '11–20',
-    color: 'peach',
-    initials: 'ms',
-  },
-  {
-    id: 'rooted',
-    name: 'Rooted Sensors',
-    city: 'Wasco',
-    industry: 'AgTech',
-    tagline: 'Listen to the land.',
-    description:
-      'Developing soil sensors that help small farms understand moisture and plan irrigation.',
-    opportunities: ['Internship'],
-    founded: 2024,
-    team: '2–10',
-    color: 'sand',
-    initials: 'rs',
-  },
-  {
-    id: 'arroyo',
-    name: 'Arroyo Waterworks',
-    city: 'Bakersfield',
-    industry: 'Climate tech',
-    tagline: 'Every drop has a future.',
-    description: 'Prototyping water monitoring tools for local farms and community gardens.',
-    opportunities: ['Coffee chat'],
-    founded: 2023,
-    team: '2–10',
-    color: 'lavender',
-    initials: 'aw',
-  },
-  {
-    id: 'citrus',
-    name: 'Citrus Signal',
-    city: 'Visalia',
-    industry: 'Software',
-    tagline: 'Make your next move clearer.',
-    description:
-      'Building accessible inventory software for neighborhood food producers and markets.',
-    opportunities: ['Internship', 'Full-time'],
-    founded: 2021,
-    team: '11–20',
-    color: 'peach',
-    initials: 'cs',
-  },
-  {
-    id: 'sprout',
-    name: 'Sprout Transit',
-    city: 'Tulare',
-    industry: 'Clean energy',
-    tagline: 'Local deliveries. Lighter footprints.',
-    description: 'Developing route planning tools for small electric delivery fleets.',
-    opportunities: [],
-    founded: 2024,
-    team: '2–10',
-    color: 'sage',
-    initials: 'st',
-  },
-  {
-    id: 'juniper',
-    name: 'Juniper Access',
-    city: 'Bakersfield',
-    industry: 'HealthTech',
-    tagline: 'A simpler path to support.',
-    description: 'Designing accessible appointment tools for community wellness providers.',
-    opportunities: ['Coffee chat'],
-    founded: 2022,
-    team: '2–10',
-    color: 'lavender',
-    initials: 'ja',
-  },
-  {
-    id: 'harvest',
-    name: 'Harvest Thread',
-    city: 'Delano',
-    industry: 'AgTech',
-    tagline: 'Connecting the people who grow.',
-    description: 'Creating planning software that helps small growers coordinate shared equipment.',
-    opportunities: ['Internship'],
-    founded: 2023,
-    team: '2–10',
-    color: 'sand',
-    initials: 'ht',
-  },
-  {
-    id: 'bright',
-    name: 'Bright Acre',
-    city: 'Wasco',
-    industry: 'Clean energy',
-    tagline: 'Room for brighter ideas.',
-    description: 'Exploring compact solar systems for agricultural workshops and outbuildings.',
-    opportunities: ['Full-time'],
-    founded: 2021,
-    team: '11–20',
-    color: 'peach',
-    initials: 'ba',
-  },
-  {
-    id: 'valley',
-    name: 'Valley Ledger',
-    city: 'Bakersfield',
-    industry: 'Software',
-    tagline: 'Keep the work flowing.',
-    description: 'Building straightforward bookkeeping tools for independent local contractors.',
-    opportunities: ['Internship', 'Coffee chat'],
-    founded: 2024,
-    team: '2–10',
-    color: 'sage',
-    initials: 'vl',
-  },
-  {
-    id: 'luma',
-    name: 'Luma Orchard',
-    city: 'Visalia',
-    industry: 'AgTech',
-    tagline: 'A clearer view from the orchard.',
-    description: 'Testing camera tools that help growers record and compare crop conditions.',
-    opportunities: [],
-    founded: 2023,
-    team: '2–10',
-    color: 'lavender',
-    initials: 'lo',
-  },
-  {
-    id: 'kindred',
-    name: 'Kindred Care Tools',
-    city: 'Tulare',
-    industry: 'HealthTech',
-    tagline: 'More time for human connection.',
-    description: 'Creating simple coordination software for small community care organizations.',
-    opportunities: ['Full-time'],
-    founded: 2022,
-    team: '11–20',
-    color: 'sand',
-    initials: 'kc',
-  },
-  {
-    id: 'terra',
-    name: 'Terra Cycleworks',
-    city: 'Delano',
-    industry: 'Climate tech',
-    tagline: 'Find possibility in the leftovers.',
-    description: 'Prototyping systems to help local food businesses coordinate compost collection.',
-    opportunities: ['Coffee chat'],
-    founded: 2024,
-    team: '2–10',
-    color: 'sage',
-    initials: 'tc',
-  },
-  {
-    id: 'poppy',
-    name: 'Poppy Systems',
-    city: 'Bakersfield',
-    industry: 'Software',
-    tagline: 'Thoughtful tools for everyday work.',
-    description: 'Building accessible check-in and communication tools for shared workspaces.',
-    opportunities: ['Internship'],
-    founded: 2023,
-    team: '2–10',
-    color: 'peach',
-    initials: 'ps',
-  },
-  {
-    id: 'ever',
-    name: 'Everfield Energy',
-    city: 'Wasco',
-    industry: 'Clean energy',
-    tagline: 'Put good energy to work.',
-    description: 'Designing dashboards to help small farms understand their electricity use.',
-    opportunities: ['Full-time', 'Coffee chat'],
-    founded: 2022,
-    team: '11–20',
-    color: 'sand',
-    initials: 'ee',
-  },
-  {
-    id: 'willow',
-    name: 'Willow Connect',
-    city: 'Visalia',
-    industry: 'HealthTech',
-    tagline: 'Community is a good place to start.',
-    description: 'Exploring digital directories that help people find nearby wellness resources.',
-    opportunities: ['Coffee chat'],
-    founded: 2024,
-    team: '2–10',
-    color: 'lavender',
-    initials: 'wc',
-  },
-].map((company) => ({
-  ...company,
-  opportunities: company.opportunities as Opportunity[],
-  verificationDate: null,
-  sources: [],
-}));
+interface CompanyRecord extends Omit<
+  Company,
+  | 'city'
+  | 'companyTypeLabel'
+  | 'industry'
+  | 'industries'
+  | 'tagline'
+  | 'opportunities'
+  | 'founded'
+  | 'team'
+  | 'color'
+  | 'initials'
+  | 'verificationDate'
+> {
+  industry: string[];
+  foundedYear?: number;
+  launchYear?: number;
+  employeeRange?: string | null;
+}
 
-export const cities = [...new Set(companies.map((c) => c.city))].sort();
-export const industries = [...new Set(companies.map((c) => c.industry))].sort();
-export const opportunityTypes: Opportunity[] = ['Internship', 'Full-time', 'Coffee chat'];
+interface ResearchDataset {
+  schemaVersion: number;
+  dataset: {
+    name: string;
+    scope: { county: string; state: string; country: string };
+    sourceSnapshotDate: string;
+    roleRecheckDays: number;
+    companyRecheckDays: number;
+    note: string;
+  };
+  companies: CompanyRecord[];
+  programs: Array<Record<string, unknown>>;
+  ecosystemResources: Array<Record<string, unknown>>;
+  verificationQueue: Array<Record<string, unknown>>;
+}
+
+const dataset = researchData as unknown as ResearchDataset;
+
+function initials(name: string): string {
+  return name
+    .replace(/\([^)]*\)/g, '')
+    .split(/[\s/-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toLowerCase();
+}
+
+function colorFor(industries: string[]): string {
+  const label = industries.join(' ').toLowerCase();
+  if (/health|clinical|neural/.test(label)) return 'lavender';
+  if (/energy|aerospace|defense|utility/.test(label)) return 'peach';
+  if (/climate|food|government|public/.test(label)) return 'sand';
+  return 'sage';
+}
+
+function opportunityFor(roleType: string): Opportunity {
+  if (roleType === 'internship') return 'Internship';
+  if (roleType === 'full_time') return 'Full-time';
+  return 'Technical role';
+}
+
+function isOpenAtSnapshot(opening: Opening): boolean {
+  return opening.status === 'open_at_snapshot' || opening.status === 'open_reported_verify_live';
+}
+
+export const companies: Company[] = dataset.companies.map((record) => {
+  const industries = record.industry;
+  const city = record.localConnection.city ?? 'Kern County';
+  const openRoles = record.openings.filter(isOpenAtSnapshot);
+  return {
+    ...record,
+    city,
+    companyTypeLabel: record.companyType
+      .split('_')
+      .map((word) => word[0].toUpperCase() + word.slice(1))
+      .join(' '),
+    industry: industries[0] ?? 'Other',
+    industries,
+    tagline: record.companyType
+      .split('_')
+      .map((word) => word[0].toUpperCase() + word.slice(1))
+      .join(' '),
+    opportunities: [...new Set(openRoles.map((opening) => opportunityFor(opening.roleType)))],
+    founded: record.foundedYear ?? record.launchYear ?? null,
+    team: record.employeeRange ?? null,
+    color: colorFor(industries),
+    initials: initials(record.name),
+    verificationDate: record.roleSearch.checkedAt,
+  };
+});
+
+export const cities = [...new Set(companies.map((company) => company.city))].sort();
+export const companyTypes = [
+  ...new Set(companies.map((company) => company.companyTypeLabel)),
+].sort();
+export const industries = [...new Set(companies.flatMap((company) => company.industries))].sort();
+export const opportunityTypes: Opportunity[] = [
+  ...new Set(companies.flatMap((company) => company.opportunities)),
+].sort();
+export const datasetInfo = dataset.dataset;
+export const programs = dataset.programs;
+export const ecosystemResources = dataset.ecosystemResources;
+export const verificationQueue = dataset.verificationQueue;

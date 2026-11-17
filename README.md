@@ -1,8 +1,8 @@
 # LaunchScout
 
-A privacy-first company discovery prototype for Bakersfield and nearby Central Valley cities, built with React, TypeScript, and Vite. Implements the interface and local behavior in [issue #2](https://github.com/GaelCT/LaunchScout/issues/2) and the resume-to-Markdown foundation for [issue #3](https://github.com/GaelCT/LaunchScout/issues/3).
+A privacy-first company discovery prototype for Kern County, built with React, TypeScript, and Vite. It implements the swipe-card experience in [issue #2](https://github.com/GaelCT/LaunchScout/issues/2), the resume-to-Markdown foundation for [issue #3](https://github.com/GaelCT/LaunchScout/issues/3), and a source-linked local research snapshot.
 
-**Demo status:** All 20 companies, descriptions, statistics, and opportunities are fictional. There are no verified listings, live job openings, real contacts, or source links in this dataset. Using fake data is intentional for this development phase; the real-data acceptance criteria in issues #1 and #2 remain outstanding.
+**Research data:** `src/research-data/kern-county.json` contains 28 company records, 2 student-program records, 2 ecosystem resources, and 2 verification-queue leads from the Kern County research brief. The snapshot date is November 13, 2026. It is a dated research dataset, not a live feed: users should open linked sources and confirm role status, requirements, pay, and contact routes before acting. Unknown information remains blank, and potential student skill fit is editorial guidance rather than an employer claim. The California-wide expansion and ongoing listing-maintenance process are not implemented.
 
 See [current project status](STATUS.md) for completed work, issue ownership, validation, and the remaining requirements for issues #1–#4.
 
@@ -27,13 +27,13 @@ npm run format:check
 
 ## Prototype behavior
 
-- Discover one company at a time. Open its card for details, sample stats, verification status, and an editable outreach template.
+- Discover one company at a time. Open its card for source-linked company details, reported statistics when available, role status, and an editable outreach draft.
 - Save a company to a persistent Saved collection, or pass to exclude it from Discover. Both states survive reloads. Saved companies also leave the deck.
 - Swipe right to save or left to pass. Buttons provide the same actions; left/right arrow keys work while the card has focus. Undo reverses the most recent decision in the current session.
-- Filter Discover by city, industry, and sample opportunity type. Filters intersect; passed companies remain excluded. Saved and Passed collections show all their companies regardless of discovery filters.
+- Filter Discover by city, company type, industry, and role type listed in the research snapshot. Filters intersect; passed companies remain excluded. Saved and Passed collections show all their companies regardless of discovery filters.
 - Remove a saved company or restore a passed company to return it to Discover, subject to current filters.
 - Open **Privacy & your data** in the sidebar, or the shield button on mobile, to clear each category or all local data.
-- Edit draft subject and body, then explicitly copy them. The demo never sends emails or supplies a recipient.
+- Edit the outreach subject and body, then explicitly copy them. LaunchScout does not send emails or supply unverified recipients.
 - Use the moon/sun toggle to switch between light and dark themes. The choice survives reloads and can be reset in Privacy controls.
 - Cards tilt with a horizontal drag and fly right when saved or left when passed. Decisions are stored immediately; the animation is only visual. Reduced-motion preferences skip the flight and drag rotation.
 - **My resume** opens an opt-in workspace to import a resume, edit Markdown, preview it, review it, and download `resume.md`. Optional AI cleanup is available only when the local server is configured.
@@ -107,7 +107,7 @@ The API is local prototype middleware available in `npm run dev` and `npm run pr
 
 This is the first implementation slice of #3. Company-specific AI email generation, outreach goal selection, and tailored resume variants remain follow-up work. The existing non-AI outreach editor stays available. The issue remains open, including its reviewed-company-data dependency.
 
-The demo covers Bakersfield, Delano, Wasco, Tulare, and Visalia as an illustrative discovery area. This does not establish a geographic policy for the future researched dataset.
+The current research snapshot covers Kern County communities. Company listings, student programs, ecosystem resources, and leads awaiting verification are stored as separate data types.
 
 ## Privacy and storage
 
@@ -117,7 +117,7 @@ One origin-scoped browser `localStorage` key, `launchscout.preferences.v1`, cont
 {
   "saved": ["company-id"],
   "rejected": ["other-company-id"],
-  "filters": { "city": "", "industry": "", "opportunity": "" },
+  "filters": { "city": "", "companyType": "", "industry": "", "opportunity": "" },
   "theme": "dark"
 }
 ```
@@ -128,18 +128,13 @@ Privacy controls clear saved IDs, passed IDs, filters, the appearance preference
 
 There is no telemetry, analytics, external font request, or automatic email sending. The optional resume cleanup endpoint is the only AI integration. The app fetches its own static assets; GitHub, provider-policy links, and future public source links visit third-party sites only when opened. A future hosting provider may maintain its own request logs.
 
-## Replacing the demo data
+## Research data and maintenance
 
-The typed fixture data is in `src/data.ts`; browser preference validation is in `src/storage.ts`. Preserve stable company IDs to preserve existing saved selections.
+The reviewed snapshot is stored in `src/research-data/kern-county.json`; `src/data.ts` maps company records into the card interface, and `src/storage.ts` validates saved company IDs and filters against the dataset. Stable company IDs preserve saved and passed selections when records are updated.
 
-Before enabling a real-data mode:
+The app presents company types, local connection, industries, source links and check dates, reported role details, student programs, and potential skill-fit notes. No relevant public role found in the research is different from a claim that a company has no opportunities. Openings are historical snapshot records and must be confirmed on the linked employer page. Unknown team size, contact details, and other fields remain unknown. Do not scrape private contact details or invent contacts, openings, statistics, or hiring plans.
 
-1. Import the reviewed spreadsheet from issue #1, including public source URLs and actual check dates.
-2. Make unavailable stats optional and omit unknown openings. Never infer contacts, opportunities, or statistics.
-3. Replace the demo disclosures, hardcoded sample labels, and fictional draft disclaimer with accurate verification and source-based wording. The current UI deliberately always identifies its fixtures as fictional.
-4. Confirm the listing reviewer, review cadence, stale threshold, and removal process under the separate maintenance workstream.
-
-The issue must remain open until its real-data requirements are satisfied. This prototype does not implement research, ongoing listing maintenance, California-wide expansion, tailored resume variants, or AI outreach.
+Before treating the directory as current, assign a listing reviewer, establish a review cadence and stale threshold, and define a flag, recheck, and removal process. The dataset includes recommended company and role recheck intervals, but the app does not yet perform scheduled updates or flag stale listings automatically. California-wide expansion, LLM-generated outreach, tailored resume variants, and inbox integrations are not implemented.
 
 ## Verification
 
