@@ -269,14 +269,14 @@ test('privacy clear-all removes the session resume and consent', async ({ page }
   await expect(page.getByRole('checkbox', { name: 'Enable resume workspace' })).not.toBeChecked();
 });
 
-test('API rejects unconsented and cross-origin submissions before any provider call', async ({
+test('API rejects anonymous and cross-origin submissions before any provider call', async ({
   request,
 }) => {
   const missingConsent = await request.post('/api/resume/normalize', {
     headers: { Origin: 'http://127.0.0.1:5173' },
     data: { text: sample },
   });
-  expect(missingConsent.status()).toBe(400);
+  expect(missingConsent.status()).toBe(503);
   const foreign = await request.post('/api/resume/normalize', {
     headers: { Origin: 'https://example.com' },
     data: { text: sample, consent: true },

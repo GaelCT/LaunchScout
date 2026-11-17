@@ -8,6 +8,18 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: launchscout_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: fictional-ci-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d launchscout_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,6 +35,9 @@ jobs:
       - run: npm run format:check
       - run: npm run build
       - run: npx playwright install --with-deps chromium
+      - run: npm run test:server
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:fictional-ci-only@127.0.0.1:5432/launchscout_test
       - run: npm test
       - uses: actions/upload-artifact@v4
         if: failure()

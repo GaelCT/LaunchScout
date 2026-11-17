@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { extractResume, initialMarkdown, MAX_RESUME_CHARS } from './resume';
 import type { ResumeDocument } from './resume';
+import { authenticatedFetch } from './auth';
 import './resume.css';
 
 const example =
@@ -39,6 +40,7 @@ export function ResumeWorkspace({
   const [message, setMessage] = useState('');
   const [consent, setConsent] = useState(false);
   const [available, setAvailable] = useState<boolean | null>(null);
+  const [unavailableReason, setUnavailableReason] = useState('');
   const sequence = useRef(0);
   const request = useRef<AbortController | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -58,7 +60,19 @@ export function ResumeWorkspace({
     const abort = new AbortController();
     void fetch('/api/resume/status', { signal: abort.signal })
       .then((response) => (response.ok ? response.json() : null))
-      .then((value) => setAvailable(value?.available === true))
+      .then((value) => {
+        setAvailable(value?.available === true);
+        const reasons: Record<string, string> = {
+          sign_in: 'Sign in with a verified account to request AI cleanup.',
+          verify_email: 'Verify your account email before requesting AI cleanup.',
+          not_enabled: 'AI cleanup requires operator approval for this account.',
+          paused: 'AI cleanup is paused. Local editing remains available.',
+        };
+        setUnavailableReason(
+          reasons[value?.reason] ??
+            'AI cleanup is not configured. Local editing and downloads need no key.',
+        );
+      })
       .catch(() => {
         if (!abort.signal.aborted) setAvailable(false);
       });
@@ -130,9 +144,9 @@ export function ResumeWorkspace({
     setError('');
     setMessage('');
     try {
-      const response = await fetch('/api/resume/normalize', {
+      const response = await authenticatedFetch('/api/resume/normalize', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID() },
         signal: controller.signal,
         body: JSON.stringify({ text: source, consent: true }),
       });
@@ -378,10 +392,7 @@ export function ResumeWorkspace({
               same—always review the result.
             </p>
             {enabled && available === false && (
-              <div className="ai-unavailable">
-                AI cleanup isn’t enabled here. Local parsing, editing, previews, and Markdown
-                downloads need no API key.
-              </div>
+              <div className="ai-unavailable">{unavailableReason}</div>
             )}
             <label className="ai-consent">
               <input

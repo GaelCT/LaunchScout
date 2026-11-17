@@ -4,7 +4,7 @@ Updated November 16, 2026. This report describes the implementation in this bran
 
 ## Current state
 
-LaunchScout is a working local prototype with a responsive swipe-card interface, a Kern County research snapshot, an optional resume workspace, and a frontend-only login preview. The JSON snapshot is dated November 13, 2026 and contains 28 companies, 2 student programs, 2 ecosystem resources, and 2 leads awaiting verification. It is not a live feed, and public role information must be rechecked before users apply. The login preview does not authenticate or create accounts. No API credentials or private resumes are included.
+LaunchScout has a responsive JSON-backed company discovery interface, session-only resume tools, and a PostgreSQL-backed account API when configured. The research snapshot is dated November 13, 2026 and contains 28 companies, 2 programs, 2 ecosystem resources and 2 unverified leads. This branch implements #8 authentication and #12 paid-AI controls for review; it does not enable cloud resume storage or complete #6 collection syncing. Mistral and Jev remain planned.
 
 ## Issue status and ownership
 
@@ -19,13 +19,14 @@ Issues #2 and #3 remain open because their full acceptance criteria have not bee
 
 ## Account work breakdown
 
-| Issue                                                                           | Owner  | Status in this branch                                                                                                                                                                                                                                                                 |
-| ------------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [#6: PostgreSQL accounts](https://github.com/GaelCT/LaunchScout/issues/6)       | GaelCT | Not implemented: PostgreSQL schema, migrations, persistent users, and account data APIs.                                                                                                                                                                                              |
-| [#7: Login-page prototype](https://github.com/GaelCT/LaunchScout/issues/7)      | GaelCT | Frontend merged in PR #9; issue #7 is closed: responsive light/dark page, local validation, show/hide password, cancelable mock submission, credential cleanup, clear guest/preview feedback, disabled recovery/registration controls, and inactive OAuth/future-method placeholders. |
-| [#8: Password hashing and JWTs](https://github.com/GaelCT/LaunchScout/issues/8) | GaelCT | Not implemented: real credential verification, hashing, token/session issuance and validation, recovery, logout/revocation, and backend authorization.                                                                                                                                |
+| Issue                                                                           | Owner  | Status in this branch                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [#6: PostgreSQL accounts](https://github.com/GaelCT/LaunchScout/issues/6)       | GaelCT | Proposed schema in docs/database-schema.md and issue #6. Required auth/usage tables, migrations and local PostgreSQL setup are implemented for #8/#12. Collection tables, sync APIs, cross-device preferences and explicit guest import remain #6 work.                                                         |
+| [#7: Login-page prototype](https://github.com/GaelCT/LaunchScout/issues/7)      | GaelCT | Completed and merged. The real account forms now extend the established UI under #8.                                                                                                                                                                                                                            |
+| [#8: Password hashing and JWTs](https://github.com/GaelCT/LaunchScout/issues/8) | GaelCT | Implemented for review: Argon2id, live JWT/session checks, rotating refresh tokens/replay revocation, registration, email verification/reset, password change, logout/deletion, CSRF, abuse limits, account-state cleanup and browser integration. Requires configured PostgreSQL, secrets and SMTP to operate. |
+| [#12: AI API protection](https://github.com/GaelCT/LaunchScout/issues/12)       | GaelCT | Implemented for review: verified/entitled account access, shared rate/token/request/budget/concurrency limits, atomic conservative reservations and settlement, idempotency, deadlines/cancellation, trusted-proxy policy, kill switch, metadata events and operator commands. AI defaults off.                 |
 
-Google, GitHub, passkeys, and email links are placeholders only. No OAuth or other external sign-in provider is connected. The `AuthAdapter` boundary is ready for a future real service; the current mock creates no tokens or persisted login state.
+Google/GitHub and possible passkey/email-link sign-in remain placeholders. Account authentication uses the real API; the browser receives only HTTP-only cookies and an in-memory account/CSRF view. The guest workflow stays available without account configuration.
 
 ## Planned Mistral integration
 
@@ -36,24 +37,25 @@ Google, GitHub, passkeys, and email links are placeholders only. No OAuth or oth
 - Explore source-linked Kern County company records, save or pass, restore selections, filter the discovery deck, and retain preferences after reloading.
 - Open company details and edit/copy a non-AI outreach template. No email is automatically sent.
 - Use the light/dark theme toggle and swipe, button, or keyboard card actions.
-- Open **Sign in** to preview the login interface with fictional inputs, then return to the guest app. Fields clear after mock submission or leaving the login page.
+- Register, verify an email, sign in/out, restore sessions, recover/change a password and delete an account when the backend is configured. Private session state clears on account changes.
 - Import a resume locally, correct extracted text, edit/preview Markdown, approve it, and download a reusable copy without any API key.
 - Download and run `public/tools/parse_resume.py` without an LLM. PDF support needs `pypdf`; DOCX/TXT/Markdown use Python's standard library.
-- Optionally request AI resume-format cleanup after explicit consent, if the local server is configured with `OPENAI_API_KEY` and `OPENAI_MODEL`. This is resume cleanup, not company-specific email generation or job-specific resume tailoring.
+- Request consented AI cleanup only with a verified, operator-enabled account and configured provider/model/prices/budget. The feature remains formatting cleanup; company-specific AI outreach is not implemented.
 
 ## Privacy and deployment boundaries
 
-- Browser localStorage contains only saved/passed company IDs, filters, and the theme.
+- Guest localStorage contains only saved/passed IDs, filters and theme. Signed-in choices stay in memory until #6 syncing; credentials, tokens and resume text never enter browser storage. PostgreSQL holds account, hashed credential/token, session and content-free accounting data.
 - Resume text lives in browser session memory. Delete, disable, reload, or close the tab to discard it. Python outputs and downloaded files remain on the user's device until deleted there.
 - Only an explicit consented cleanup sends extracted resume text to OpenAI through the local API. The original file is not uploaded to the provider. No live provider call has been used for validation of this branch.
-- The cleanup API is local Vite development/preview middleware. A static deployment supports the manual resume workflow but needs a separately deployed backend for AI. Public AI deployment still needs authentication, deployment-specific rate/abuse controls, and reviewed privacy/retention disclosures.
+- A standalone API now enforces #8/#12 controls; Vite only proxies API requests locally. Production needs the reviewed same-origin HTTPS deployment under #15. Setup, retention, key rotation, rate/budget defaults and operator responsibilities are documented in docs/security.md.
 - A provider key is not bundled, exposed to the browser, or required for the manual workflow. Model access and API usage must be configured by the operator.
 
 ## Validation
 
 - Production TypeScript/Vite build and Prettier formatting checks.
-- 64 Playwright checks across desktop and an emulated phone viewport in Chromium: 22 discovery/theme/privacy checks, 8 JSON research checks, 20 resume checks, and 14 login-preview checks. Coverage includes the dated JSON snapshot, source links, role requirements and closed status, combined filters, legacy preference cleanup, guest continuity, local resume extraction, consent, cancellation/deletion, and safe preview rendering.
-- 17 Python parser unit tests with socket creation disabled, plus a command-line conversion of the fictional PDF.
+- 68 desktop/mobile Chromium checks cover JSON discovery, real-account frontend requests (mocked API responses), privacy/storage behavior, local resume parsing, consent, cancellation, safe rendering, layouts and themes.
+- 22 backend security integration tests use real PostgreSQL, including two independent Node processes sharing admission limits and a real browser registration/verification/login/cleanup/logout flow. Provider/mail adapters are synthetic; no paid call or outside email is sent.
+- 17 Python parser tests run in CI with socket creation disabled.
 - AI browser responses are mocked; no live LLM factual-quality, cost, latency, or refusal evaluation has been performed.
 - Phone viewport checks are not a Safari/WebKit compatibility claim. GitHub Actions results must be checked after the branch is pushed.
 
@@ -64,4 +66,4 @@ Google, GitHub, passkeys, and email links are placeholders only. No OAuth or oth
 3. Complete #3's outreach generation and goal controls using approved resume text and reviewed company facts.
 4. Coordinate #4's email-client handoff with JCVB51.
 
-California-wide expansion, OCR, tailored resume variants, inbox integrations, and automatic email delivery are not implemented. Automatic delivery remains outside the current MVP scope.
+California-wide expansion, OCR, tailored resume variants, inbox integrations and automatic outreach delivery remain unimplemented. Account verification/recovery emails are distinct from outreach.
