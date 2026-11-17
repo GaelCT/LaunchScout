@@ -15,6 +15,7 @@
     "format:check": "prettier --check src server scripts server-tests tests docs *.ts *.json *.html *.md .github/workflows/*.yml compose.yaml",
     "start": "tsx server/start.ts",
     "test:server": "tsx --test --test-concurrency=1 server-tests/api.test.ts",
+    "benchmark:password": "tsx scripts/password-benchmark.ts",
     "db:migrate": "tsx server/ops.ts migrate",
     "ops": "tsx server/ops.ts"
   },

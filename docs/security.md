@@ -28,6 +28,8 @@ Use the documented owner connection only for local development/migrations. Befor
 - Authenticated mutations require an exact allowed Origin and a session-bound, server-derived CSRF header. Login/registration/recovery also require the exact Origin and JSON. CORS is not treated as authentication.
 - Sign-out and account changes clear private session state and cancel/ignore old resume work. Browser retries after renewal are bound to the original account; they cannot send an old user's action under a new user's session. Signed-in company choices remain in memory pending #6; guest preferences are not silently uploaded or overwritten by account choices.
 
+Run `npm run benchmark:password` on deployment hardware before choosing stronger work parameters. It uses a synthetic password, three warmups and 20 samples; it reports timings without credentials, hashes or database access. On November 16, 2026, Windows/Node 24.16.0 on an Intel Core Ultra 7 155H measured hashing at 16 ms median/23 ms p95, verification at 15 ms median/21 ms p95, and two simultaneous hashes at 28 ms total. These are local measurements, not production capacity estimates; retain at least the documented OWASP baseline and remeasure under deployment load before tuning.
+
 ## Recovery and verification
 
 Registration and link-request messages are generic for known/unknown addresses. Verification links expire after 24 hours; reset links after 15 minutes. They are purpose-bound, stored hashed, consumed once, and replaced on a new request. Reset changes the hash and revokes sessions atomically.
