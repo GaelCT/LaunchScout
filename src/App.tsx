@@ -11,6 +11,7 @@ import {
   ExternalLink,
   FileText,
   Leaf,
+  LogIn,
   MapPin,
   Moon,
   RotateCcw,
@@ -32,8 +33,9 @@ import { Modal } from './Modal';
 import { useCardMotion } from './useCardMotion';
 import { ResumeWorkspace } from './ResumeWorkspace';
 import type { ResumeDocument } from './resume';
+import { LoginPage } from './LoginPage';
 
-type View = 'discover' | 'saved' | 'passed' | 'resume';
+type View = 'discover' | 'saved' | 'passed' | 'resume' | 'login';
 type Decision = { id: string; wasSaved: boolean; wasRejected: boolean };
 
 function Brand({ small = false }: { small?: boolean }) {
@@ -300,6 +302,21 @@ export default function App() {
     </button>
   );
 
+  if (view === 'login') {
+    return (
+      <LoginPage
+        brand={<Brand />}
+        themeToggle={themeToggle}
+        onBack={() => {
+          setView('discover');
+          requestAnimationFrame(() =>
+            document.querySelector<HTMLHeadingElement>('.page-intro h1')?.focus(),
+          );
+        }}
+      />
+    );
+  }
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
@@ -352,6 +369,10 @@ export default function App() {
               About LaunchScout
               <ArrowUpRight size={15} />
             </button>
+            <button className="auth-entry" onClick={() => setView('login')}>
+              <LogIn size={15} />
+              Sign in
+            </button>
           </div>
         </header>
         <main id="main-content">
@@ -364,6 +385,9 @@ export default function App() {
               onClick={() => setPrivacy(true)}
             >
               <ShieldCheck size={22} />
+            </button>
+            <button className="auth-entry" aria-label="Sign in" onClick={() => setView('login')}>
+              <LogIn size={20} />
             </button>
           </div>
           <div className="demo-notice">
@@ -389,7 +413,7 @@ export default function App() {
                 <span />
                 {view === 'resume' ? 'A LITTLE CLARITY. ALL YOU.' : 'BAKERSFIELD & BEYOND'}
               </div>
-              <h1>
+              <h1 tabIndex={-1}>
                 {view === 'resume' ? (
                   <>
                     Your story, <em>clearly told.</em>
