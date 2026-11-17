@@ -37,6 +37,15 @@ npm run format:check
 - Use the moon/sun toggle to switch between light and dark themes. The choice survives reloads and can be reset in Privacy controls.
 - Cards tilt with a horizontal drag and fly right when saved or left when passed. Decisions are stored immediately; the animation is only visual. Reduced-motion preferences skip the flight and drag rotation.
 - **My resume** opens an opt-in workspace to import a resume, edit Markdown, preview it, review it, and download `resume.md`. Optional AI cleanup is available only when the local server is configured.
+- **Sign in** opens a frontend-only login preview with email/password validation, show/hide password, sample details, loading feedback, and a guest return path. It never authenticates a user, sends a login request, or creates a session. Inputs are cleared after submission or leaving the page.
+
+## Login preview
+
+The sign-in entry appears in the desktop header and as a sign-in icon beside the theme/privacy controls on mobile. Use fictional details or **Use example details** to try it. **Preview sign in** simulates a short local loading state, clears the form, and explicitly confirms that the visitor is still a guest. Guest discovery, saved preferences, and the current session resume remain available.
+
+Google and GitHub buttons are disabled placeholders. Passkeys and email links are listed as possible future choices. No OAuth provider has been selected or connected. Account creation and password recovery are visibly marked for later rather than linked to nonexistent flows.
+
+`src/auth.ts` defines the `AuthAdapter` boundary and a cancelable mock adapter. It ignores the supplied credentials and performs no I/O. Login values remain in component memory only; no login state or token is stored in cookies, localStorage, sessionStorage, URLs, or logs. Real authentication must replace the adapter and add real session/error handling under [#8](https://github.com/GaelCT/LaunchScout/issues/8), with PostgreSQL account data tracked in [#6](https://github.com/GaelCT/LaunchScout/issues/6). The preview must never authorize backend access. This implements the frontend scope of [#7](https://github.com/GaelCT/LaunchScout/issues/7).
 
 ## Resume workspace
 
@@ -134,7 +143,7 @@ The issue must remain open until its real-data requirements are satisfied. This 
 
 ## Verification
 
-Playwright runs the same user flows on desktop and an emulated iPhone viewport using Chromium: persistence and privacy resets, filters and rejection exclusion, edited draft copying and disposal, missing-source disclosures, undo and restoration, an exhausted deck, malformed/blocked storage, swipe and keyboard actions, theme persistence, viewport overflow, and dialog focus restoration. Resume tests cover actual PDF/DOCX extraction using fictional fixtures, editing, preview safety, reviewed downloads, consent, deletion during a pending AI request, and server rejection of unconsented/cross-origin submissions. AI success/error responses are mocked; no live provider request or factual-output quality evaluation is performed by the tests. This is mobile layout testing, not a Safari/WebKit compatibility claim.
+Playwright runs the same user flows on desktop and an emulated iPhone viewport using Chromium: persistence and privacy resets, filters and rejection exclusion, edited draft copying and disposal, missing-source disclosures, undo and restoration, an exhausted deck, malformed/blocked storage, swipe and keyboard actions, theme persistence, viewport overflow, and dialog focus restoration. Resume tests cover actual PDF/DOCX extraction using fictional fixtures, editing, preview safety, reviewed downloads, consent, deletion during a pending AI request, and server rejection of unconsented/cross-origin submissions. Login tests cover validation, keyboard/focus behavior, password visibility and cleanup, loading/cancellation, no auth requests or persisted credentials, inactive providers, themes, and guest workflow continuity. AI success/error responses are mocked; no live provider request or factual-output quality evaluation is performed by the tests. This is mobile layout testing, not a Safari/WebKit compatibility claim.
 
 The standalone parser has Python unit tests covering PDF/DOCX/TXT/Markdown extraction, formatting, invalid inputs, limits, output protection, and the CLI. They run with socket creation disabled to catch accidental network use. Run them after installing the optional PDF dependency with `python -m unittest discover -s tests/python -v`.
 
