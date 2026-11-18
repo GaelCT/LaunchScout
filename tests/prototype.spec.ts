@@ -63,10 +63,12 @@ test('save and pass persist, stay excluded through filters, and can be cleared i
 test('details disclose research sources and unknown stats; editable drafts are ephemeral and never sent', async ({
   page,
   context,
+  baseURL,
 }) => {
   const external: string[] = [];
+  const appOrigin = new URL(baseURL!).origin;
   page.on('request', (request) => {
-    if (!request.url().startsWith('http://127.0.0.1:5173')) external.push(request.url());
+    if (new URL(request.url()).origin !== appOrigin) external.push(request.url());
   });
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/');
@@ -102,7 +104,11 @@ test('details disclose research sources and unknown stats; editable drafts are e
     .getByRole('textbox', { name: 'Your message', exact: true })
     .inputValue();
   expect(resetDraft).toContain(`Hello ${firstCompany.name} team,`);
-  expect(resetDraft).toContain(firstCompany.roleSearch.checkedAt);
+  expect(resetDraft).toContain(firstCompany.industry[0]);
+  expect(resetDraft).toContain('internship opportunities');
+  await expect(page.getByRole('textbox', { name: 'Subject', exact: true })).toHaveValue(
+    `Student internship inquiry — ${firstCompany.name}`,
+  );
   expect(resetDraft).not.toContain('My own words.');
   expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain('My own words.');
   expect(external).toEqual([]);

@@ -33,7 +33,7 @@ npm run format:check
 - Filter Discover by city, company type, industry, and role type listed in the research snapshot. Filters intersect; passed companies remain excluded. Saved and Passed collections show all their companies regardless of discovery filters.
 - Remove a saved company or restore a passed company to return it to Discover, subject to current filters.
 - Open **Privacy & your data** in the sidebar, or the shield button on mobile, to clear each category or all local data.
-- Edit the outreach subject and body, then explicitly copy them. LaunchScout does not send emails or supply unverified recipients.
+- Choose an internship, coffee-chat, or desired-role outreach goal; edit the generated subject and message, then open a prefilled `mailto:` draft or copy it. A recipient is prefilled only when a public company email is listed. If the email app does not open, copy the draft instead. LaunchScout does not access inboxes or send emails.
 - Use the moon/sun toggle to switch between light and dark themes. The choice survives reloads and can be reset in Privacy controls.
 - Cards tilt with a horizontal drag and fly right when saved or left when passed. Decisions are stored immediately; the animation is only visual. Reduced-motion preferences skip the flight and drag rotation.
 - **My resume** opens an opt-in workspace to import a resume, edit Markdown, preview it, review it, and download `resume.md`. Optional AI cleanup is available only when the local server is configured.
@@ -105,7 +105,7 @@ The request asks for faithful Markdown organization without embellishment, job t
 
 The API is local prototype middleware available in `npm run dev` and `npm run preview`. It rejects non-local hosts and cross-origin submissions. A plain static deployment of `dist/` supports manual import/edit/download but has no AI endpoint. Public deployment requires an authenticated backend with deployment-specific abuse controls; the local middleware is not a public AI service.
 
-This is the first implementation slice of #3. Company-specific AI email generation, outreach goal selection, and tailored resume variants remain follow-up work. The existing non-AI outreach editor stays available. The issue remains open, including its reviewed-company-data dependency.
+The non-AI email-client handoff is implemented under #4. Company-specific AI email generation and tailored resume variants remain follow-up work under #3, including its reviewed-company-data dependency.
 
 The current research snapshot covers Kern County communities. Company listings, student programs, ecosystem resources, and leads awaiting verification are stored as separate data types.
 
@@ -122,7 +122,7 @@ One origin-scoped browser `localStorage` key, `launchscout.preferences.v1`, cont
 }
 ```
 
-No names, email addresses, resumes, user accounts, or draft content are stored in localStorage. Resume content is held in session memory as described above. Outreach text stays in memory while its dialog is open, including when switching between its tabs. Closing the dialog or reloading discards it. Copying explicitly places draft text on the operating system clipboard; LaunchScout does not clear that clipboard.
+No names, email addresses, resumes, user accounts, or draft content are stored in localStorage. Resume content is held in session memory as described above. Outreach text stays in memory while its dialog is open, including when switching between its tabs. Closing the dialog or reloading discards it. Opening a `mailto:` link hands the current draft and any listed public company email to the default email app; LaunchScout does not read inbox contents or send the message. Copying explicitly places draft text on the operating system clipboard; LaunchScout does not clear that clipboard.
 
 Privacy controls clear saved IDs, passed IDs, filters, the appearance preference, and session resume content independently. Clearing everything removes the key, restores the light theme, clears the undo action, and removes session resume content and consent. Clearing browser site data also removes saved preferences. Preferences do not sync between devices or origins. If storage is blocked, the interface stays usable in memory and displays a persistence warning when a write fails. Malformed stored JSON is discarded; unknown IDs, unsupported filters, and invalid themes are sanitized.
 
@@ -139,6 +139,8 @@ Before treating the directory as current, assign a listing reviewer, establish a
 ## Verification
 
 Playwright runs the same user flows on desktop and an emulated iPhone viewport using Chromium: persistence and privacy resets, filters and rejection exclusion, edited draft copying and disposal, missing-source disclosures, undo and restoration, an exhausted deck, malformed/blocked storage, swipe and keyboard actions, theme persistence, viewport overflow, and dialog focus restoration. Resume tests cover actual PDF/DOCX extraction using fictional fixtures, editing, preview safety, reviewed downloads, consent, deletion during a pending AI request, and server rejection of unconsented/cross-origin submissions. Login tests cover validation, keyboard/focus behavior, password visibility and cleanup, loading/cancellation, no auth requests or persisted credentials, inactive providers, themes, and guest workflow continuity. AI success/error responses are mocked; no live provider request or factual-output quality evaluation is performed by the tests. This is mobile layout testing, not a Safari/WebKit compatibility claim.
+
+Outreach tests cover all three goals, retaining edits until choices are applied, public/blank recipients, Unicode and reserved-character encoding, clipboard copying and denied-clipboard fallback. The dialog-reset regression checks the current default template while retaining research-date checks in company details. Opening a native email app remains a manual platform check.
 
 The standalone parser has Python unit tests covering PDF/DOCX/TXT/Markdown extraction, formatting, invalid inputs, limits, output protection, and the CLI. They run with socket creation disabled to catch accidental network use. Run them after installing the optional PDF dependency with `python -m unittest discover -s tests/python -v`.
 

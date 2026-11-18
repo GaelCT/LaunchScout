@@ -12,6 +12,7 @@ import {
   FileText,
   Leaf,
   LogIn,
+  Mail,
   MapPin,
   Moon,
   RotateCcw,
@@ -825,11 +826,13 @@ export default function App() {
           </div>
           <p className="modal-copy">
             Company preferences stay local. Outreach drafts exist only while their company dialog is
-            open and are discarded when it closes. Copying a draft puts it on your device’s
-            clipboard. Clearing browser data also clears your preferences. They do not sync between
-            devices. Resume files are read in your browser and their text stays in session memory
-            until deleted or reloaded. Only an explicit AI cleanup request sends the extracted text
-            through the local server to OpenAI. Provider retention may apply.
+            open and are discarded when it closes. Opening an email draft hands its current subject
+            and body, plus a listed public company email when available, to your default email app.
+            LaunchScout does not read your inbox or send the message. Copying a draft puts it on
+            your device’s clipboard. Clearing browser data also clears your preferences. They do not
+            sync between devices. Resume files are read in your browser and their text stays in
+            session memory until deleted or reloaded. Only an explicit AI cleanup request sends the
+            extracted text through the local server to OpenAI. Provider retention may apply.
           </p>
           <div className="privacy-controls">
             <PrivacyRow
@@ -992,6 +995,52 @@ function formatOpeningStatus(status: string): string {
   return status.replaceAll('_', ' ');
 }
 
+type OutreachGoal = 'internship' | 'coffee_chat' | 'desired_role';
+
+function createOutreachDraft(company: Company, goal: OutreachGoal, desiredRole: string) {
+  const focus = company.industry;
+  const greeting = `Hello ${company.name} team,`;
+  const signoff = `Thank you for your time,\n[Your name]`;
+  if (goal === 'internship') {
+    return {
+      subject: `Student internship inquiry — ${company.name}`,
+      body: `${greeting}\n\nI’m a student interested in your work in ${focus}. I’m reaching out to ask whether your team anticipates internship opportunities suitable for students. I’d be glad to share more about my background if useful.\n\n${signoff}`,
+    };
+  }
+  if (goal === 'coffee_chat') {
+    return {
+      subject: `Coffee chat request — ${company.name}`,
+      body: `${greeting}\n\nI came across your work in ${focus}. Would someone on your team be open to a brief 15-minute coffee chat? I’d value the chance to learn more about your work and what skills students should develop for this field.\n\n${signoff}`,
+    };
+  }
+  const role = desiredRole.trim() || '[role you are interested in]';
+  return {
+    subject: desiredRole.trim()
+      ? `Interest in ${desiredRole.trim()} — ${company.name}`
+      : `Role inquiry — ${company.name}`,
+    body: `${greeting}\n\nI’m a student interested in pursuing ${role} opportunities. I came across your work in ${focus} and would appreciate learning whether my background could be relevant to your team.\n\n${signoff}`,
+  };
+}
+
+function getVerifiedPublicEmail(contact: string | null): string | null {
+  if (!contact?.toLowerCase().startsWith('mailto:')) return null;
+  const recipient = contact.slice('mailto:'.length).split('?')[0];
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(recipient).trim();
+  } catch {
+    return null;
+  }
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(decoded) ? decoded : null;
+}
+
+function createMailtoHref(recipient: string | null, subject: string, body: string): string {
+  const to = recipient ? encodeURIComponent(recipient) : '';
+  const safeSubject = subject.replace(/[\r\n]+/g, ' ').trim();
+  const safeBody = body.replace(/\r?\n/g, '\r\n');
+  return `mailto:${to}?subject=${encodeURIComponent(safeSubject)}&body=${encodeURIComponent(safeBody)}`;
+}
+
 function CompanyDetails({
   company,
   onClose,
@@ -1004,14 +1053,28 @@ function CompanyDetails({
   onSave: () => void;
 }) {
   const [tab, setTab] = useState<'overview' | 'outreach'>('overview');
-  const [subject, setSubject] = useState(`Student inquiry — ${company.name}`);
-  const [body, setBody] = useState(
-    `Hello ${company.name} team,\n\nI’m a student interested in ${company.industry.toLowerCase()} and learning more about your work. I’m especially interested in ${company.potentialStudentFit.skillAreas.slice(0, 2).join(' and ')}.\n\nI saw that your public role information was checked on ${company.roleSearch.checkedAt}. Would you be open to sharing whether you expect student project, internship, or entry-level opportunities?\n\nThank you for your time,\n[Your name]`,
-  );
+  const [goal, setGoal] = useState<OutreachGoal>('internship');
+  const [desiredRole, setDesiredRole] = useState('');
+  const initialDraft = createOutreachDraft(company, 'internship', '');
+  const [subject, setSubject] = useState(initialDraft.subject);
+  const [body, setBody] = useState(initialDraft.body);
   const [copyStatus, setCopyStatus] = useState('');
+  const publicEmail = getVerifiedPublicEmail(company.publicLinks.contact);
+  const mailtoHref = createMailtoHref(publicEmail, subject, body);
+
+  function applyOutreachChoices() {
+    const draft = createOutreachDraft(company, goal, desiredRole);
+    setSubject(draft.subject);
+    setBody(draft.body);
+    setCopyStatus(
+      'Draft updated from your selections. Review and edit it before opening your email app.',
+    );
+  }
+
   async function copyDraft() {
+    const recipientLine = publicEmail ? `To: ${publicEmail}\n` : '';
     try {
-      await navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`);
+      await navigator.clipboard.writeText(`${recipientLine}Subject: ${subject}\n\n${body}`);
       setCopyStatus('Draft copied. Review it before using.');
     } catch {
       setCopyStatus('Clipboard unavailable. Select and copy the text manually.');
@@ -1211,6 +1274,43 @@ function CompanyDetails({
               review every detail before sending; LaunchScout will not send it for you.
             </p>
           </div>
+          <div className="draft-goal-controls">
+            <label className="draft-label">
+              Outreach goal
+              <select
+                value={goal}
+                onChange={(event) => {
+                  setGoal(event.target.value as OutreachGoal);
+                  setCopyStatus('');
+                }}
+              >
+                <option value="internship">Internship inquiry</option>
+                <option value="coffee_chat">Coffee chat</option>
+                <option value="desired_role">Ask about a specific role</option>
+              </select>
+            </label>
+            {goal === 'desired_role' && (
+              <label className="draft-label">
+                Role you’re interested in
+                <input
+                  maxLength={120}
+                  placeholder="For example, backend engineering intern"
+                  value={desiredRole}
+                  onChange={(event) => {
+                    setDesiredRole(event.target.value);
+                    setCopyStatus('');
+                  }}
+                />
+              </label>
+            )}
+            <button className="secondary-button" type="button" onClick={applyOutreachChoices}>
+              Apply choices to draft
+            </button>
+            <p className="draft-contact-note">
+              Applying choices replaces the current subject and message. You can edit both
+              afterward.
+            </p>
+          </div>
           <label className="draft-label">
             Subject
             <input
@@ -1232,15 +1332,28 @@ function CompanyDetails({
               }}
             />
           </label>
+          <p className="draft-contact-note">
+            {publicEmail
+              ? `Verified public company email: ${publicEmail}.`
+              : 'No verified public company email is listed; the recipient field will be blank.'}{' '}
+            If your email app does not open or the draft is not transferred, use Copy draft. The app
+            never sends the message, and resume information is not added.
+          </p>
           <div className="draft-footer">
             <span>
               <ShieldCheck size={14} />
               Draft stays here until you close this dialog.
             </span>
-            <button className="primary-button" onClick={copyDraft}>
-              <Copy size={16} />
-              Copy draft
-            </button>
+            <div className="draft-actions">
+              <a className="primary-button mailto-button" href={mailtoHref}>
+                <Mail size={16} />
+                Open email draft
+              </a>
+              <button className="secondary-button" onClick={copyDraft}>
+                <Copy size={16} />
+                Copy draft
+              </button>
+            </div>
           </div>
           <p className="copy-status" role="status">
             {copyStatus}
