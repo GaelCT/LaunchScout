@@ -1,6 +1,6 @@
 # LaunchScout project status
 
-Updated November 16, 2026. This report describes the implementation in this branch; an open pull request does not mean the changes have been merged into `main`.
+Updated November 17, 2026. This report describes the implementation in this branch; an open pull request does not mean the changes have been merged into `main`.
 
 ## Current state
 
@@ -13,7 +13,7 @@ LaunchScout is a working local prototype with a responsive swipe-card interface,
 | [#1: Research local startups](https://github.com/GaelCT/LaunchScout/issues/1) | JCVB51      | Integrated a source-linked Kern County snapshot with 28 company records, 2 student programs, 2 ecosystem resources, and 2 verification leads.                                                                                                                                                    | Review the integrated records and source links against the research brief, agree on the issue’s final fields/geographic scope, and use the supplied JSON dataset as the research handoff. Define listing ownership and ongoing maintenance before treating the directory as current.                                            |
 | [#2: Swipe-card MVP](https://github.com/GaelCT/LaunchScout/issues/2)          | GaelCT      | Discovery cards, source-linked company details, snapshot role information, editable outreach drafts, copy fallback, city/company-type/industry/role filters, persistent Saved/Passed collections, undo/restore, privacy resets, dark theme, directional card motion, and reduced-motion support. | Review data quality, verify source links, check current role statuses, and validate the complete data-driven workflow. Listings remain a dated snapshot rather than live openings.                                                                                                                                              |
 | [#3: Opt-in LLM outreach](https://github.com/GaelCT/LaunchScout/issues/3)     | GaelCT      | Opt-in PDF/DOCX/TXT/MD import; local extraction; original-text view; editable Markdown and safe preview; review before download; session deletion; optional server-side OpenAI cleanup; cancellation/error recovery; downloadable offline Python parser; synthetic test resume.                  | Connect approved resume content and reviewed company data to editable AI **email** generation; add internship, coffee-chat, desired-role, target-contact, and company-needs options; support regeneration; label and validate generated outreach. Configure and evaluate a real provider/model before claiming live AI quality. |
-| [#4: Email-client handoff](https://github.com/GaelCT/LaunchScout/issues/4)    | JCVB51      | Copying editable outreach text already works in #2.                                                                                                                                                                                                                                              | Add a properly encoded `mailto:` action with verified public recipients when available, outreach-goal templates, manual-client review, and copy fallback. No inbox OAuth or automatic sending.                                                                                                                                  |
+| [#4: Email-client handoff](https://github.com/GaelCT/LaunchScout/issues/4)    | JCVB51      | Goal-based editable outreach drafts, percent-encoded `mailto:` handoff, prefilled recipient only from a public `mailto:` contact route, and copy fallback. No inbox OAuth or automatic sending.                                                                                                  | Confirm default-client behavior on target browsers; review remains open until the handoff is manually checked.                                                                                                                                                                                                                  |
 
 Issues #2 and #3 remain open because their full acceptance criteria have not been met. Completed implementation slices are committed by issue, without automatic issue-closing keywords.
 
@@ -34,7 +34,7 @@ Google, GitHub, passkeys, and email links are placeholders only. No OAuth or oth
 ## What users can do now
 
 - Explore source-linked Kern County company records, save or pass, restore selections, filter the discovery deck, and retain preferences after reloading.
-- Open company details and edit/copy a non-AI outreach template. No email is automatically sent.
+- Open company details, choose an internship, coffee-chat, or desired-role template, edit it, then open a prefilled `mailto:` draft or copy the content. Only a listed public email is prefilled; no message is automatically sent.
 - Use the light/dark theme toggle and swipe, button, or keyboard card actions.
 - Open **Sign in** to preview the login interface with fictional inputs, then return to the guest app. Fields clear after mock submission or leaving the login page.
 - Import a resume locally, correct extracted text, edit/preview Markdown, approve it, and download a reusable copy without any API key.
@@ -62,6 +62,6 @@ Google, GitHub, passkeys, and email links are placeholders only. No OAuth or oth
 1. Review the integrated Kern County JSON records against their linked sources and record corrections under issue #2. The research handoff in #1 is already complete.
 2. Confirm role statuses, record any corrections, and define a reviewer, cadence, stale threshold, and removal workflow.
 3. Complete #3's outreach generation and goal controls using approved resume text and reviewed company facts.
-4. Coordinate #4's email-client handoff with JCVB51.
+4. Manually confirm #4 with a configured default email client; the app does not automatically send messages.
 
 California-wide expansion, OCR, tailored resume variants, inbox integrations, and automatic email delivery are not implemented. Automatic delivery remains outside the current MVP scope.

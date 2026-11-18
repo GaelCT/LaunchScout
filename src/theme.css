@@ -247,8 +247,12 @@ html[data-theme='dark'] {
   border-color: #45515b;
   color: #bbcad0;
 }
+[data-theme='dark'] .draft-contact-note {
+  color: var(--secondary);
+}
 [data-theme='dark'] .draft-label input,
-[data-theme='dark'] .draft-label textarea {
+[data-theme='dark'] .draft-label textarea,
+[data-theme='dark'] .draft-label select {
   background: var(--field);
   border-color: var(--stroke);
   color: var(--ink);
