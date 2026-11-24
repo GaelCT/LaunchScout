@@ -11,6 +11,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "playwright test",
+    "test:security:production": "playwright test --config=playwright.production.config.ts tests/security.spec.ts",
     "format": "prettier --write src server tests *.ts *.json *.html *.md .github/workflows/*.yml",
     "format:check": "prettier --check src server tests *.ts *.json *.html *.md .github/workflows/*.yml"
   },
