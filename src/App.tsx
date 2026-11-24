@@ -1,1365 +1,486 @@
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { ChangeEvent, CSSProperties, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import {
+  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   Bookmark,
   Check,
-  CheckCheck,
   ChevronDown,
-  Compass,
-  Copy,
+  ChevronRight,
   ExternalLink,
   FileText,
-  Leaf,
-  LogIn,
+  Inbox,
+  LockKeyhole,
   Mail,
-  MapPin,
   Moon,
   RotateCcw,
+  Search,
   ShieldCheck,
   SlidersHorizontal,
-  Sparkles,
-  Sprout,
   Sun,
-  Trash2,
-  Users,
   X,
 } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { cities, companies, companyTypes, datasetInfo, industries, opportunityTypes } from './data';
-import type { Company } from './data';
-import { emptyFilters, emptyPreferences, loadPreferences, STORAGE_KEY } from './storage';
-import type { Filters, Preferences } from './storage';
-import { Modal } from './Modal';
-import { useCardMotion } from './useCardMotion';
+import type { Company, Filters, Theme } from './types';
+import { COMPANIES, ECOSYSTEM_RESOURCES, filterOptions, STUDENT_PROGRAMS } from './data';
+import { loadPreferences, savePreferences } from './storage';
+import { getVerifiedPublicEmail, safeExternalUrl, safePublicContactUrl } from './urls';
 import { ResumeWorkspace } from './ResumeWorkspace';
-import type { ResumeDocument } from './resume';
 import { LoginPage } from './LoginPage';
 
-type View = 'discover' | 'saved' | 'passed' | 'resume' | 'login';
-type Decision = { id: string; wasSaved: boolean; wasRejected: boolean };
+const DEFAULT_FILTERS: Filters = { city: '', companyType: '', industry: '', opportunity: '' };
+const RESEARCH_DATE = 'November 13, 2026';
 
-function Brand({ small = false }: { small?: boolean }) {
-  return (
-    <span className={`brand ${small ? 'brand-small' : ''}`}>
-      <span className="brand-mark">
-        <Compass size={25} strokeWidth={1.6} />
-      </span>
-      LaunchScout<span className="brand-dot">.</span>
-    </span>
-  );
+type View = 'discover' | 'saved' | 'passed' | 'resume' | 'login';
+type DetailTab = 'details' | 'outreach';
+type OutreachGoal = 'internship' | 'coffee' | 'role';
+
+interface Props {
+  children: ReactNode;
+  className?: string;
 }
 
-function CompanyArt({ company, compact = false }: { company: Company; compact?: boolean }) {
-  const industry = company.industries.join(' ').toLowerCase();
-  const ArtIcon = /agtech|agriculture|food/.test(industry)
-    ? Sprout
-    : /energy|aerospace|defense/.test(industry)
-      ? Sparkles
-      : /health|clinical|neural/.test(industry)
-        ? Users
-        : /climate|environment/.test(industry)
-          ? Leaf
-          : Compass;
+function Button({ children, className = '', ...props }: Props & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button className={`button ${className}`} {...props}>{children}</button>;
+}
+
+function CompanyDetails({ company, onClose }: { company: Company; onClose: () => void }) {
+  const [tab, setTab] = useState<DetailTab>('details');
+  const [goal, setGoal] = useState<OutreachGoal>('internship');
+  const [role, setRole] = useState('');
+  const [subject, setSubject] = useState('');
+  const [body, setBody] = useState('');
+  const [copied, setCopied] = useState(false);
+  const publicContact = safePublicContactUrl(company.publicLinks.contact);
+  const publicEmail = getVerifiedPublicEmail(publicContact);
+
+  useEffect(() => {
+    setRole(company.openings.find((opening) => opening.status !== 'closed')?.title ?? company.openings[0]?.title ?? '');
+  }, [company]);
+
+  useEffect(() => {
+    const templates = {
+      internship: {
+        subject: `Internship question for ${company.name}`,
+        body: `Hello ${company.name} team,\n\nI am a local student interested in learning about internship opportunities. I would appreciate any guidance on upcoming roles or the best way to apply.\n\nThank you for your time.`,
+      },
+      coffee: {
+        subject: `Coffee chat request — ${company.name}`,
+        body: `Hello ${company.name} team,\n\nI am a local student exploring career paths and would be grateful for a brief conversation about your work and experience. Please let me know if you would be open to a short coffee chat.\n\nThank you.`,
+      },
+      role: {
+        subject: `Question about ${role || 'an open role'} at ${company.name}`,
+        body: `Hello ${company.name} team,\n\nI am interested in ${role || 'an open role'} and would like to learn more about the position and application process. I would appreciate any information you can share.\n\nThank you.`,
+      },
+    };
+    setSubject(templates[goal].subject);
+    setBody(templates[goal].body);
+    setCopied(false);
+  }, [company, goal, role]);
+
+  const mailtoHref = createMailtoHref(publicEmail, subject, body);
+  const draftText = `To: ${publicEmail ?? 'Choose the appropriate public recipient'}\nSubject: ${subject}\n\n${body}`;
+
+  async function copyDraft() {
+    try {
+      await navigator.clipboard.writeText(draftText);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
+
   return (
-    <div
-      className={`company-art ${company.color} ${compact ? 'compact-art' : ''}`}
-      aria-hidden="true"
-    >
-      <span className="art-grid" />
-      <span className="art-orbit orbit-one" />
-      <span className="art-orbit orbit-two" />
-      <span className="art-caption">LOCAL OPPORTUNITY</span>
-      <span className="art-center">
-        <ArtIcon size={76} strokeWidth={1.1} />
-      </span>
-      <span className="art-spark spark-one">✳</span>
-      <span className="art-spark spark-two">+</span>
-      <span className="art-bottom">Kern County & nearby</span>
-      <span className="art-coordinate">KERN COUNTY, CA</span>
+    <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section className="company-dialog" role="dialog" aria-modal="true" aria-labelledby="company-dialog-title">
+        <div className="dialog-topline">
+          <span className="eyebrow">{company.city} · {company.companyType}</span>
+          <button className="icon-button" onClick={onClose} aria-label="Close company details"><X size={20} /></button>
+        </div>
+        <h2 id="company-dialog-title">{company.name}</h2>
+        <div className="dialog-tabs" role="tablist" aria-label="Company information">
+          <button role="tab" aria-selected={tab === 'details'} onClick={() => setTab('details')}>Company details</button>
+          <button role="tab" aria-selected={tab === 'outreach'} onClick={() => setTab('outreach')}>Outreach draft</button>
+        </div>
+        {tab === 'details' ? (
+          <div className="dialog-scroll">
+            <p className="dialog-description">{company.description}</p>
+            <div className="detail-facts">
+              <div><span>Local connection</span><strong>{company.localConnection}</strong></div>
+              <div><span>Industries</span><strong>{company.industries.join(' · ')}</strong></div>
+              {company.teamSize && <div><span>Reported team size</span><strong>{company.teamSize}</strong></div>}
+              {company.yearFounded && <div><span>Founded</span><strong>{company.yearFounded}</strong></div>}
+            </div>
+            <div className="research-note"><ShieldCheck size={17} /><p>Research snapshot from {RESEARCH_DATE}. Role details and status are not live; confirm them on the employer’s current page.</p></div>
+            <section className="detail-section">
+              <h3>Reported opportunities</h3>
+              {company.openings.length ? company.openings.map((opening) => {
+                const applicationUrl = safeExternalUrl(opening.applicationUrl);
+                return (
+                  <article className="opening" key={opening.id}>
+                    <div className="opening-heading"><div><span className={`status status-${opening.status}`}>{opening.status === 'open-snapshot' ? 'Open in snapshot' : opening.status}</span><h4>{opening.title}</h4></div>{applicationUrl ? <a href={applicationUrl} target="_blank" rel="noopener noreferrer" aria-label={`View role or application for ${opening.title}`}>View role / application <ArrowUpRight size={15} /></a> : <span className="muted">Application link unavailable because the recorded URL is not valid HTTPS.</span>}</div>
+                    <dl className="opening-facts">
+                      <div><dt>Type</dt><dd>{opening.type}</dd></div>
+                      <div><dt>Location</dt><dd>{opening.location}</dd></div>
+                      <div><dt>Compensation</dt><dd>{opening.pay}</dd></div>
+                      <div><dt>Education</dt><dd>{opening.education}</dd></div>
+                      <div><dt>Experience</dt><dd>{opening.experience}</dd></div>
+                      <div><dt>Timing</dt><dd>{opening.schedule}</dd></div>
+                      <div><dt>Apply by</dt><dd>{opening.applyBy ?? 'Not listed'}</dd></div>
+                      <div><dt>Source checked</dt><dd>{opening.checkedOn}</dd></div>
+                    </dl>
+                    <div className="requirements"><div><h5>Requirements</h5><ul>{opening.requirements.map((item) => <li key={item}>{item}</li>)}</ul></div><div><h5>Preferred</h5><ul>{opening.preferred.length ? opening.preferred.map((item) => <li key={item}>{item}</li>) : <li>Not listed</li>}</ul></div></div>
+                    <p className="opening-notes">{opening.notes}</p>
+                  </article>
+                );
+              }) : <p className="muted">No relevant public student or entry-level opening was found in this snapshot. This does not mean the company has no opportunities.</p>}
+            </section>
+            <section className="detail-section">
+              <h3>Potential student skill fit</h3>
+              <p className="muted">Editorial guidance based on the work described in the sources — not an employer requirement or hiring claim.</p>
+              <div className="skill-list">{company.studentSkillFit.map((skill) => <span key={skill}>{skill}</span>)}</div>
+            </section>
+            {company.notes && <section className="detail-section"><h3>Research notes</h3><p>{company.notes}</p></section>}
+            <section className="detail-section sources">
+              <h3>Sources</h3>
+              {company.sources.map((source) => {
+                const sourceUrl = safeExternalUrl(source.url);
+                return <div className="source-row" key={`${source.label}-${source.url}`}><div>{sourceUrl ? <a href={sourceUrl} target="_blank" rel="noopener noreferrer">{source.label} <ExternalLink size={13} /></a> : <span>{source.label}</span>}<span>Checked {source.checkedOn}</span></div><p>{source.supports}</p>{!sourceUrl && <p className="source-unavailable">Source link unavailable because the recorded URL is not valid HTTPS.</p>}</div>;
+              })}
+            </section>
+            <section className="detail-section">
+              <h3>Public contact</h3>
+              {publicContact ? <a className="contact-link" href={publicContact} target={publicContact.startsWith('https:') ? '_blank' : undefined} rel={publicContact.startsWith('https:') ? 'noopener noreferrer' : undefined}>Public contact route <ArrowUpRight size={15} /></a> : <p className="muted">No public contact route listed. Do not assume or invent a recipient.</p>}
+            </section>
+          </div>
+        ) : (
+          <div className="outreach-panel">
+            <div className="outreach-intro"><Mail size={20} /><div><h3>Start with an editable draft</h3><p>Uses only this company’s public research record. LaunchScout does not send emails or access your inbox.</p></div></div>
+            <fieldset className="goal-picker"><legend>What is your goal?</legend>{([['internship', 'Ask about internships'], ['coffee', 'Request a coffee chat'], ['role', 'Ask about a desired role']] as const).map(([value, label]) => <label key={value} className={goal === value ? 'selected' : ''}><input type="radio" name="goal" value={value} checked={goal === value} onChange={() => setGoal(value)} />{label}</label>)}</fieldset>
+            {goal === 'role' && <label className="field"><span>Desired role</span><input value={role} onChange={(event) => setRole(event.target.value)} placeholder="Role you want to ask about" list="company-roles" /><datalist id="company-roles">{company.openings.map((opening) => <option key={opening.id} value={opening.title} />)}</datalist></label>}
+            <div className="recipient-note"><span>Recipient</span><strong>{publicEmail ?? 'No public email prefilled'}</strong><p>{publicEmail ? 'This is the public contact listed in the research record.' : 'Add the appropriate public recipient in your email app, or use the company’s public contact route.'}</p></div>
+            <label className="field"><span>Subject</span><input value={subject} onChange={(event) => { setSubject(event.target.value); setCopied(false); }} /></label>
+            <label className="field"><span>Your message</span><textarea value={body} onChange={(event) => { setBody(event.target.value); setCopied(false); }} rows={9} /></label>
+            <p className="draft-disclosure">Review and personalize this template before sending. No qualifications, role availability, or company interest is inferred.</p>
+            <div className="outreach-actions"><a className={`button primary ${!mailtoHref ? 'disabled-link' : ''}`} href={mailtoHref ?? undefined} aria-disabled={!mailtoHref} onClick={(event) => { if (!mailtoHref) event.preventDefault(); }}><Mail size={17} />Open email draft</a><Button onClick={copyDraft}>{copied ? <Check size={17} /> : <FileText size={17} />}{copied ? 'Copied' : 'Copy draft'}</Button></div>
+            {!publicEmail && <p className="muted small">Open email draft is unavailable without a listed public email. You can still copy the message.</p>}
+          </div>
+        )}
+        {tab === 'details' && <div className="dialog-footer"><Button className="primary" onClick={() => setTab('outreach')}>Make an outreach draft <ArrowRight size={17} /></Button></div>}
+      </section>
     </div>
   );
 }
 
-function formatRoleSearchStatus(status: string): string {
-  const labels: Record<string, string> = {
-    no_relevant_public_roles: 'No relevant public role verified',
-    not_hiring_at_snapshot: 'Not hiring at last check',
-    no_relevant_local_student_role: 'No local student role verified',
-    open_student_roles: 'Student roles listed open at last check',
-    open_student_and_early_career_roles: 'Student and early-career roles listed open at last check',
-    open_student_role_reported: 'Student role reported; recheck employer page',
-    closed_or_expired: 'Roles closed or expired at last check',
-    no_relevant_student_role: 'No relevant student role verified',
-    open_nonstudent_role: 'Professional role listed open at last check',
-    no_specific_student_role: 'No specific student role verified',
-    open_nonstudent_roles: 'Professional roles listed open at last check',
-    program_announced_no_specific_role: 'Program announced; role details not yet listed',
-  };
-  return labels[status] ?? status.replaceAll('_', ' ');
+function createMailtoHref(email: string | null, subject: string, body: string) {
+  if (!email) return null;
+  return `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function CompanyCard({ company, saved, onSave, onPass, onOpen, motion, onMotionEnd }: { company: Company; saved: boolean; onSave: () => void; onPass: () => void; onOpen: () => void; motion: 'left' | 'right' | null; onMotionEnd: () => void }) {
+  const [dragX, setDragX] = useState(0);
+  const startX = useRef<number | null>(null);
+  const moved = useRef(false);
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function pointerDown(event: PointerEvent<HTMLElement>) {
+    if ((event.target as HTMLElement).closest('button, a')) return;
+    startX.current = event.clientX;
+    moved.current = false;
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function pointerMove(event: PointerEvent<HTMLElement>) {
+    if (startX.current === null || reducedMotion) return;
+    const delta = event.clientX - startX.current;
+    if (Math.abs(delta) > 6) moved.current = true;
+    setDragX(delta);
+  }
+
+  function pointerUp(event: PointerEvent<HTMLElement>) {
+    if (startX.current === null) return;
+    const delta = event.clientX - startX.current;
+    startX.current = null;
+    setDragX(0);
+    if (Math.abs(delta) > 90) delta > 0 ? onSave() : onPass();
+    else if (!moved.current && !(event.target as HTMLElement).closest('button, a')) onOpen();
+  }
+
+  function keyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.target !== event.currentTarget) return;
+    if (event.key === 'ArrowRight') { event.preventDefault(); onSave(); }
+    if (event.key === 'ArrowLeft') { event.preventDefault(); onPass(); }
+    if (event.key === 'Enter') { event.preventDefault(); onOpen(); }
+  }
+
+  const style = {
+    '--drag-x': `${dragX}px`,
+    '--drag-rotate': `${reducedMotion ? 0 : dragX / 24}deg`,
+  } as CSSProperties;
+
+  return (
+    <article className={`company-card ${motion ? `fly-${motion}` : ''}`} style={style} tabIndex={0} onKeyDown={keyDown} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={() => { startX.current = null; setDragX(0); }} onAnimationEnd={motion ? onMotionEnd : undefined} aria-label={`${company.name} company card. Press Enter for details, right arrow to save, left arrow to pass.`}>
+      <div className="card-accent" />
+      <div className="card-content">
+        <div className="card-top"><span className="company-type">{company.companyType}</span><span className="card-location">{company.city}</span></div>
+        <div className="company-mark" aria-hidden="true">{company.name.split(/\s+/).slice(0, 2).map((word) => word[0]).join('')}</div>
+        <h2>{company.name}</h2>
+        <p className="card-description">{company.description}</p>
+        <div className="industry-list">{company.industries.slice(0, 3).map((industry) => <span key={industry}>{industry}</span>)}</div>
+        <div className="card-role">
+          <span className="eyebrow">{company.openings.length ? 'Latest role snapshot' : 'Research snapshot'}</span>
+          {company.openings.length ? <><strong>{company.openings[0].title}</strong><span>{company.openings[0].type} · {company.openings[0].location}</span></> : <strong>No public student role found in this snapshot</strong>}
+        </div>
+        <div className="card-bottom"><span><ShieldCheck size={15} /> Researched {RESEARCH_DATE}</span><button className="text-button" onClick={onOpen}>View {company.name} details & sources <ArrowUpRight size={16} /></button></div>
+      </div>
+      <div className="swipe-hint pass-hint">PASS</div><div className="swipe-hint save-hint">SAVE</div>
+      {saved && <div className="saved-indicator"><Bookmark size={15} fill="currentColor" /> Saved</div>}
+    </article>
+  );
+}
+
+function FilterPanel({ filters, onChange, onClose, mobile = false }: { filters: Filters; onChange: (filters: Filters) => void; onClose?: () => void; mobile?: boolean }) {
+  const fields: Array<{ key: keyof Filters; label: string; values: string[] }> = [
+    { key: 'city', label: 'Community', values: filterOptions.cities },
+    { key: 'companyType', label: 'Organization', values: filterOptions.companyTypes },
+    { key: 'industry', label: 'Industry', values: filterOptions.industries },
+    { key: 'opportunity', label: 'Role type', values: filterOptions.opportunities },
+  ];
+  const active = Object.values(filters).filter(Boolean).length;
+  return (
+    <div className={`filter-panel ${mobile ? 'mobile-filter-panel' : ''}`}>
+      <div className="filter-title"><div><SlidersHorizontal size={18} /><h2>Refine discover</h2></div>{mobile && <button className="icon-button" onClick={onClose} aria-label="Close filters"><X size={20} /></button>}</div>
+      <p>Match the dated research snapshot to what you want to explore.</p>
+      {fields.map((field) => <label className="filter-field" key={field.key}><span>{field.label}</span><div className="select-wrap"><select value={filters[field.key]} onChange={(event) => onChange({ ...filters, [field.key]: event.target.value })}><option value="">All {field.label.toLowerCase()}s</option>{field.values.map((value) => <option key={value} value={value}>{value}</option>)}</select><ChevronDown size={16} /></div></label>)}
+      {active > 0 && <button className="clear-filters" onClick={() => onChange(DEFAULT_FILTERS)}><RotateCcw size={14} /> Clear {active} filter{active === 1 ? '' : 's'}</button>}
+      {mobile && <Button className="primary apply-filters" onClick={onClose}>Show matching companies</Button>}
+    </div>
+  );
+}
+
+function Collection({ title, companies, emptyTitle, emptyText, actionLabel, onAction, onOpen }: { title: string; companies: Company[]; emptyTitle: string; emptyText: string; actionLabel: string; onAction: (company: Company) => void; onOpen: (company: Company) => void }) {
+  return (
+    <section className="collection-view">
+      <div className="view-heading"><span className="eyebrow">Your collection</span><h1>{title}</h1><p>{companies.length} {companies.length === 1 ? 'company' : 'companies'} · Stored only in this browser</p></div>
+      {companies.length ? <div className="collection-grid">{companies.map((company) => <article className="collection-card" key={company.id}><div className="card-top"><span className="company-type">{company.companyType}</span><span className="card-location">{company.city}</span></div><h2>{company.name}</h2><p>{company.description}</p><div className="industry-list">{company.industries.slice(0, 2).map((industry) => <span key={industry}>{industry}</span>)}</div><div className="collection-actions"><Button onClick={() => onOpen(company)}>Details & sources</Button><button className="text-button" onClick={() => onAction(company)}>{actionLabel} <ArrowRight size={15} /></button></div></article>)}</div> : <div className="empty-state"><Inbox size={38} /><h2>{emptyTitle}</h2><p>{emptyText}</p></div>}
+    </section>
+  );
+}
+
+function ResearchPanel({ onClose }: { onClose?: () => void }) {
+  return (
+    <div className="research-panel">
+      <div className="filter-title"><div><FileText size={18} /><h2>Research notes</h2></div>{onClose && <button className="icon-button" onClick={onClose} aria-label="Close research notes"><X size={20} /></button>}</div>
+      <p>A dated snapshot, not a live job feed. Check the linked source before applying.</p>
+      <section><h3>Student programs</h3>{STUDENT_PROGRAMS.map((program) => <article className="mini-research-card" key={program.id}><div><h4>{program.name}</h4><span>{program.organization} · {program.city}</span></div><p>{program.description}</p><p className="mini-meta">{program.timing}<br />{program.eligibility}</p><a href={program.url} target="_blank" rel="noopener noreferrer">Program source <ArrowUpRight size={13} /></a><small>Checked {program.checkedOn}</small></article>)}</section>
+      <section><h3>Local ecosystem</h3>{ECOSYSTEM_RESOURCES.map((resource) => <article className="mini-research-card" key={resource.id}><div><h4>{resource.name}</h4><span>{resource.city}</span></div><p>{resource.description}</p><a href={resource.url} target="_blank" rel="noopener noreferrer">Resource source <ArrowUpRight size={13} /></a><small>Checked {resource.checkedOn}</small></article>)}</section>
+      <a className="repository-link" href="https://github.com/GaelCT/LaunchScout/issues/1" target="_blank" rel="noopener noreferrer">View the research handoff <ExternalLink size={14} /></a>
+    </div>
+  );
+}
+
+function PrivacyDialog({ onClose, onClear }: { onClose: () => void; onClear: (scope: 'decisions' | 'filters' | 'theme' | 'resume' | 'all') => void }) {
+  return (
+    <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <section className="privacy-dialog" role="dialog" aria-modal="true" aria-labelledby="privacy-title">
+        <div className="dialog-topline"><span className="eyebrow">Local by design</span><button className="icon-button" onClick={onClose} aria-label="Close privacy controls"><X size={20} /></button></div>
+        <div className="privacy-icon"><LockKeyhole size={25} /></div><h2 id="privacy-title">Privacy & your data</h2>
+        <p>Saved and passed company IDs, filters, and theme are stored in this browser’s localStorage. They do not sync across devices or browsers.</p>
+        <div className="privacy-fact"><ShieldCheck size={18} /><span>No account, analytics, or server database is used for discovery preferences.</span></div>
+        <p>Resume imports stay in session memory only. Outreach drafts stay in the open dialog. A mailto draft or clipboard copy is handled by your device. Deleting data here does not delete downloaded files or your email app’s drafts.</p>
+        <div className="privacy-actions"><Button onClick={() => onClear('decisions')}>Clear saved & passed</Button><Button onClick={() => onClear('filters')}>Reset filters</Button><Button onClick={() => onClear('theme')}>Reset appearance</Button><Button onClick={() => onClear('resume')}>Delete session resume</Button><Button className="danger-button" onClick={() => onClear('all')}>Clear all local data</Button></div>
+      </section>
+    </div>
+  );
 }
 
 export default function App() {
   const [initial] = useState(loadPreferences);
-  const [preferences, setPreferences] = useState<Preferences>(initial.preferences);
-  const [storageError, setStorageError] = useState(initial.error);
   const [view, setView] = useState<View>('discover');
-  const [detail, setDetail] = useState<Company | null>(null);
-  const [privacy, setPrivacy] = useState(false);
-  const [about, setAbout] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [notice, setNotice] = useState('');
-  const [undo, setUndo] = useState<Decision | null>(null);
-  const [resume, setResume] = useState<ResumeDocument | null>(null);
-  const [resumeEnabled, setResumeEnabled] = useState(false);
-  const motion = useCardMotion();
-  const { suppressClick } = motion;
+  const [saved, setSaved] = useState<string[]>(initial.saved);
+  const [rejected, setRejected] = useState<string[]>(initial.rejected);
+  const [filters, setFilters] = useState<Filters>(initial.filters);
+  const [theme, setTheme] = useState<Theme>(initial.theme);
+  const [selected, setSelected] = useState<Company | null>(null);
+  const [undo, setUndo] = useState<{ company: Company; action: 'saved' | 'rejected' } | null>(null);
+  const [motion, setMotion] = useState<'left' | 'right' | null>(null);
+  const [pendingDecision, setPendingDecision] = useState<{ company: Company; action: 'saved' | 'rejected' } | null>(null);
+  const [storageWarning, setStorageWarning] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [researchOpen, setResearchOpen] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [resumeReset, setResumeReset] = useState(0);
+  const [loginReturnView, setLoginReturnView] = useState<Exclude<View, 'login'>>('discover');
+  const modalRef = useRef<'company' | 'filters' | 'research' | 'privacy' | null>(null);
+  const modalTriggerRef = useRef<HTMLElement | null>(null);
 
-  useLayoutEffect(() => {
-    document.documentElement.dataset.theme = preferences.theme;
-  }, [preferences.theme]);
+  const matching = COMPANIES.filter((company) => (!filters.city || company.city === filters.city) && (!filters.companyType || company.companyType === filters.companyType) && (!filters.industry || company.industries.includes(filters.industry)) && (!filters.opportunity || company.openings.some((opening) => opening.type === filters.opportunity)));
+  const discover = matching.filter((company) => !saved.includes(company.id) && !rejected.includes(company.id));
+  const savedCompanies = COMPANIES.filter((company) => saved.includes(company.id));
+  const passedCompanies = COMPANIES.filter((company) => rejected.includes(company.id));
+  const current = discover[0];
+  const activeFilterCount = Object.values(filters).filter(Boolean).length;
 
   useEffect(() => {
-    try {
-      if (
-        !preferences.saved.length &&
-        !preferences.rejected.length &&
-        preferences.theme === 'light' &&
-        !Object.values(preferences.filters).some(Boolean)
-      )
-        localStorage.removeItem(STORAGE_KEY);
-      else localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
-      setStorageError(false);
-    } catch {
-      setStorageError(true);
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  }, [theme]);
+
+  useEffect(() => {
+    if (!savePreferences({ saved, rejected, filters, theme })) setStorageWarning(true);
+  }, [saved, rejected, filters, theme]);
+
+  useEffect(() => {
+    const activeModal = selected ? 'company' : filtersOpen ? 'filters' : researchOpen ? 'research' : privacyOpen ? 'privacy' : null;
+    if (activeModal && !modalRef.current) modalTriggerRef.current = document.activeElement as HTMLElement;
+    if (!activeModal && modalRef.current) {
+      const trigger = modalTriggerRef.current;
+      requestAnimationFrame(() => {
+        if (trigger?.isConnected) trigger?.focus();
+        else document.querySelector<HTMLElement>('.main-content h1, .main-content button')?.focus();
+      });
     }
-  }, [preferences]);
-
-  useEffect(() => {
-    if (!notice) return;
-    const timeout = window.setTimeout(() => setNotice(''), 6000);
-    return () => window.clearTimeout(timeout);
-  }, [notice]);
-
-  const filters = preferences.filters;
-  const activeFilters = Object.values(filters).filter(Boolean).length;
-  const filtered = companies.filter(
-    (company) =>
-      !preferences.saved.includes(company.id) &&
-      !preferences.rejected.includes(company.id) &&
-      (!filters.city || company.city === filters.city) &&
-      (!filters.companyType || company.companyTypeLabel === filters.companyType) &&
-      (!filters.industry || company.industries.includes(filters.industry)) &&
-      (!filters.opportunity || company.opportunities.some((type) => type === filters.opportunity)),
-  );
-  const current = filtered[0];
-  const saved = companies.filter((company) => preferences.saved.includes(company.id));
-  const passed = companies.filter((company) => preferences.rejected.includes(company.id));
-
-  function setFilter(key: keyof Filters, value: string) {
-    setPreferences((previous) => ({ ...previous, filters: { ...previous.filters, [key]: value } }));
-  }
-
-  function decide(company: Company, action: 'save' | 'reject') {
-    if (view === 'discover' && current?.id === company.id && !detail) motion.depart(action);
-    setUndo({
-      id: company.id,
-      wasSaved: preferences.saved.includes(company.id),
-      wasRejected: preferences.rejected.includes(company.id),
+    modalRef.current = activeModal;
+    if (!activeModal) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const frame = requestAnimationFrame(() => {
+      const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
+      const target = dialog?.querySelector<HTMLElement>('[autofocus], input:not([disabled]), button:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href]');
+      (target ?? dialog)?.focus();
     });
-    setPreferences((previous) => ({
-      ...previous,
-      saved: [
-        ...previous.saved.filter((id) => id !== company.id),
-        ...(action === 'save' ? [company.id] : []),
-      ],
-      rejected: [
-        ...previous.rejected.filter((id) => id !== company.id),
-        ...(action === 'reject' ? [company.id] : []),
-      ],
-    }));
-    setNotice(
-      action === 'save'
-        ? `${company.name} added to Saved.`
-        : `${company.name} passed. It won’t reappear in Discover.`,
-    );
+    function handleKey(event: globalThis.KeyboardEvent) {
+      if (event.key === 'Escape') { setSelected(null); setFiltersOpen(false); setResearchOpen(false); setPrivacyOpen(false); return; }
+      if (event.key !== 'Tab') return;
+      const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
+      const focusable = dialog?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex="0"]');
+      if (!focusable?.length) { event.preventDefault(); dialog?.focus(); return; }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!dialog?.contains(document.activeElement)) { event.preventDefault(); (event.shiftKey ? last : first).focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    }
+    document.addEventListener('keydown', handleKey);
+    return () => { cancelAnimationFrame(frame); document.body.style.overflow = previousOverflow; document.removeEventListener('keydown', handleKey); };
+  }, [selected, filtersOpen, researchOpen, privacyOpen]);
+
+  function changeView(next: View) {
+    setSelected(null);
+    setFiltersOpen(false);
+    setResearchOpen(false);
+    if (next !== 'discover') setUndo(null);
+    if (next === 'login') {
+      if (view !== 'login') setLoginReturnView(view === 'resume' ? 'resume' : view === 'saved' ? 'saved' : view === 'passed' ? 'passed' : 'discover');
+      setView('login');
+      window.scrollTo({ top: 0 });
+      return;
+    }
+    if (view === 'login') {
+      setView(next);
+      requestAnimationFrame(() => document.getElementById('main-content')?.focus());
+      return;
+    }
+    setView(next);
+    document.getElementById('main-content')?.focus();
   }
 
-  function undoDecision() {
-    if (!undo) return;
-    setPreferences((previous) => ({
-      ...previous,
-      saved: [
-        ...previous.saved.filter((id) => id !== undo.id),
-        ...(undo.wasSaved ? [undo.id] : []),
-      ],
-      rejected: [
-        ...previous.rejected.filter((id) => id !== undo.id),
-        ...(undo.wasRejected ? [undo.id] : []),
-      ],
-    }));
-    setUndo(null);
-    setNotice('Last action undone.');
+  function decide(company: Company, action: 'saved' | 'rejected') {
+    if (pendingDecision || selected || filtersOpen || researchOpen || privacyOpen || view !== 'discover' || current?.id !== company.id) return;
+    setUndo({ company, action });
+    setPendingDecision({ company, action });
+    setMotion(action === 'saved' ? 'right' : 'left');
+    const persist = () => {
+      if (action === 'saved') { setSaved((items) => [...items, company.id]); setRejected((items) => items.filter((id) => id !== company.id)); }
+      else { setRejected((items) => [...items, company.id]); setSaved((items) => items.filter((id) => id !== company.id)); }
+    };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      persist();
+      setMotion(null);
+      setPendingDecision(null);
+    } else {
+      (decide as typeof decide & { persist?: () => void }).persist = persist;
+    }
+  }
+
+  function finishMotion() {
+    if (pendingDecision) {
+      const { company, action } = pendingDecision;
+      if (action === 'saved') { setSaved((items) => [...items, company.id]); setRejected((items) => items.filter((id) => id !== company.id)); }
+      else { setRejected((items) => [...items, company.id]); setSaved((items) => items.filter((id) => id !== company.id)); }
+    }
+    setMotion(null);
+    setPendingDecision(null);
   }
 
   function restore(company: Company) {
-    setPreferences((previous) => ({
-      ...previous,
-      saved: previous.saved.filter((id) => id !== company.id),
-      rejected: previous.rejected.filter((id) => id !== company.id),
-    }));
+    setRejected((items) => items.filter((id) => id !== company.id));
+    setSaved((items) => items.filter((id) => id !== company.id));
     setUndo(null);
-    setNotice(`${company.name} returned to Discover.`);
   }
 
-  function clearData(type: 'saved' | 'rejected' | 'filters' | 'theme' | 'resume' | 'all') {
-    if (type === 'resume' || type === 'all') {
-      setResume(null);
-      setResumeEnabled(false);
-    }
-    if (type === 'resume') {
-      setNotice('Resume content and consent cleared from this session.');
-      return;
-    }
-    setPreferences((previous) =>
-      type === 'all'
-        ? { ...emptyPreferences, filters: { ...emptyFilters } }
-        : {
-            ...previous,
-            [type]: type === 'filters' ? { ...emptyFilters } : type === 'theme' ? 'light' : [],
-          },
-    );
+  function removeSaved(company: Company) {
+    setSaved((items) => items.filter((id) => id !== company.id));
+    setRejected((items) => items.includes(company.id) ? items : [...items, company.id]);
     setUndo(null);
-    setNotice(
-      type === 'all'
-        ? 'All LaunchScout data cleared from this browser.'
-        : `${type === 'rejected' ? 'Passed companies' : type === 'filters' ? 'Filter preferences' : type === 'theme' ? 'Appearance preference' : 'Saved companies'} cleared.`,
-    );
   }
 
-  function navItem(key: View, label: string, Icon: LucideIcon, count?: number) {
-    return (
-      <button
-        className={`nav-item ${view === key ? 'active' : ''}`}
-        aria-current={view === key ? 'page' : undefined}
-        onClick={() => setView(key)}
-      >
-        <Icon size={20} />
-        <span>{label}</span>
-        {count !== undefined && <span className="nav-count">{count}</span>}
-      </button>
-    );
+  function clearData(scope: 'decisions' | 'filters' | 'theme' | 'resume' | 'all') {
+    if (scope === 'decisions' || scope === 'all') { setSaved([]); setRejected([]); setUndo(null); }
+    if (scope === 'filters' || scope === 'all') setFilters(DEFAULT_FILTERS);
+    if (scope === 'theme' || scope === 'all') setTheme('light');
+    if (scope === 'resume' || scope === 'all') setResumeReset((value) => value + 1);
+    if (scope === 'all') setView('discover');
   }
 
-  const filterControls = (
-    <>
-      <FilterSelect
-        label="City"
-        value={filters.city}
-        options={cities}
-        allLabel="All nearby cities"
-        onChange={(value) => setFilter('city', value)}
-      />
-      <FilterSelect
-        label="Company type"
-        value={filters.companyType}
-        options={companyTypes}
-        allLabel="All company types"
-        onChange={(value) => setFilter('companyType', value)}
-      />
-      <FilterSelect
-        label="Industry"
-        value={filters.industry}
-        options={industries}
-        allLabel="All industries"
-        onChange={(value) => setFilter('industry', value)}
-      />
-      <FilterSelect
-        label="Role type"
-        value={filters.opportunity}
-        options={opportunityTypes}
-        allLabel="All role types"
-        onChange={(value) => setFilter('opportunity', value)}
-      />
-      <p className="filter-note">
-        Role types come from the listed openings and their report snapshot.
-      </p>
-    </>
-  );
-
-  const themeToggle = (
-    <button
-      className="theme-toggle"
-      aria-label={`Switch to ${preferences.theme === 'dark' ? 'light' : 'dark'} theme`}
-      title={`Switch to ${preferences.theme === 'dark' ? 'light' : 'dark'} theme`}
-      onClick={() =>
-        setPreferences((previous) => ({
-          ...previous,
-          theme: previous.theme === 'dark' ? 'light' : 'dark',
-        }))
-      }
-    >
-      {preferences.theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-    </button>
-  );
-
-  if (view === 'login') {
-    return (
-      <LoginPage
-        brand={<Brand />}
-        themeToggle={themeToggle}
-        onBack={() => {
-          setView('discover');
-          requestAnimationFrame(() =>
-            document.querySelector<HTMLHeadingElement>('.page-intro h1')?.focus(),
-          );
-        }}
-      />
-    );
-  }
+  const navItems: Array<{ id: View; label: string; icon: typeof Search; count?: number }> = [
+    { id: 'discover', label: 'Discover', icon: Search },
+    { id: 'saved', label: 'Saved', icon: Bookmark, count: saved.length },
+    { id: 'passed', label: 'Passed', icon: ArrowLeft, count: rejected.length },
+    { id: 'resume', label: 'My resume', icon: FileText },
+  ];
 
   return (
     <div className="app-shell">
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <aside className="sidebar">
-        <a
-          className="brand-link"
-          href="#discover"
-          aria-label="LaunchScout home"
-          onClick={() => setView('discover')}
-        >
-          <Brand />
-        </a>
-        <div className="workspace-label">YOUR NEXT CHAPTER</div>
-        <nav aria-label="Main navigation">
-          {navItem('discover', 'Discover', Compass)}
-          {navItem('saved', 'Saved companies', Bookmark, saved.length)}
-          {navItem('passed', 'Passed companies', X, passed.length)}
-          {navItem('resume', 'My resume', FileText)}
-        </nav>
-        <div className="sidebar-filters">
-          <div className="section-label">
-            <span>MAKE IT YOURS</span>
-            <SlidersHorizontal size={15} />
-          </div>
-          {filterControls}
-        </div>
-        <div className="sidebar-bottom">
-          <div className="local-note">
-            <span className="local-dot" />A local kind of opportunity.
-          </div>
-          <button className="privacy-link" onClick={() => setPrivacy(true)}>
-            <ShieldCheck size={18} />
-            Privacy & your data
-            <ArrowUpRight size={14} />
-          </button>
-        </div>
+        <button className="brand" onClick={() => changeView('discover')} aria-label="LaunchScout home"><span className="brand-mark"><ArrowUpRight size={23} /></span><span>Launch<span>Scout</span></span></button>
+        <div className="sidebar-label">Find your next step</div>
+        <nav aria-label="Main navigation">{navItems.map((item) => <button key={item.id} className={view === item.id ? 'active' : ''} onClick={() => changeView(item.id)} aria-current={view === item.id ? 'page' : undefined}><item.icon size={19} /><span>{item.label}</span>{item.count !== undefined && <span className="nav-count">{item.count}</span>}</button>)}</nav>
+        <div className="sidebar-spacer" />
+        <button className="sidebar-research" onClick={() => setResearchOpen(true)}><FileText size={17} /><span>Research notes</span><ChevronRight size={15} /></button>
+        <div className="sidebar-bottom"><div className="local-badge"><ShieldCheck size={16} /><div><strong>Local-first prototype</strong><span>No account needed</span></div></div><button className="sidebar-privacy" onClick={() => setPrivacyOpen(true)}><LockKeyhole size={15} /> Privacy & your data</button></div>
       </aside>
 
-      <div className="main-shell">
-        <header className="topbar">
-          <div className="breadcrumb">
-            Your neighborhood. <span>Your next big thing.</span>
-          </div>
-          <div className="topbar-right">
-            {themeToggle}
-            <span className="demo-badge">
-              <span />
-              RESEARCH SNAPSHOT
-            </span>
-            <button className="about-button" onClick={() => setAbout(true)}>
-              About LaunchScout
-              <ArrowUpRight size={15} />
-            </button>
-            <button className="auth-entry" onClick={() => setView('login')}>
-              <LogIn size={15} />
-              Sign in
-            </button>
-          </div>
-        </header>
-        <main id="main-content">
-          <div className="mobile-brand">
-            <Brand small />
-            {themeToggle}
-            <button
-              className="icon-button"
-              aria-label="Privacy and your data"
-              onClick={() => setPrivacy(true)}
-            >
-              <ShieldCheck size={22} />
-            </button>
-            <button className="auth-entry" aria-label="Sign in" onClick={() => setView('login')}>
-              <LogIn size={20} />
-            </button>
-          </div>
-          <div className="demo-notice">
-            <Sparkles size={16} />
-            <span>
-              Research snapshot: {datasetInfo.sourceSnapshotDate}.{' '}
-              <strong>Check employer sources before applying; role status may have changed.</strong>
-            </span>
-            <button onClick={() => setAbout(true)} aria-label="Learn about the research data">
-              <ArrowUpRight size={17} />
-            </button>
-          </div>
-          {storageError && (
-            <div className="storage-warning" role="alert">
-              Browser storage is unavailable or could not be read. Your changes may only last for
-              this session. Enable site storage to keep your selections.
-            </div>
-          )}
+      <header className="mobile-header"><button className="brand" onClick={() => changeView('discover')}><span className="brand-mark"><ArrowUpRight size={20} /></span><span>Launch<span>Scout</span></span></button><div><button className="icon-button" onClick={() => changeView('login')} aria-label="Sign in"><LockKeyhole size={18} /></button><button className="icon-button" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}>{theme === 'light' ? <Moon size={19} /> : <Sun size={19} />}</button><button className="icon-button" onClick={() => setPrivacyOpen(true)} aria-label="Privacy and your data"><ShieldCheck size={19} /></button></div></header>
 
-          <section className="page-intro">
-            <div>
-              <div className="eyebrow">
-                <span />
-                {view === 'resume' ? 'A LITTLE CLARITY. ALL YOU.' : 'BAKERSFIELD & BEYOND'}
+      <main className="main-content" id="main-content" tabIndex={-1}>
+        <div className="desktop-topbar"><div><span className="topbar-dot" /> Kern County research snapshot</div><div className="topbar-actions"><span>{RESEARCH_DATE}</span><button className="sign-in-button" onClick={() => changeView('login')}><LockKeyhole size={15} /> Sign in</button><button className="icon-button" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}>{theme === 'light' ? <Moon size={19} /> : <Sun size={19} />}</button></div></div>
+        {view === 'login' ? <LoginPage onBack={() => changeView(loginReturnView)} /> : view === 'resume' ? <ResumeWorkspace resetSignal={resumeReset} /> : view === 'discover' ? (
+          <div className="discover-layout">
+            <div className="discover-main">
+              <div className="discover-heading"><div><span className="eyebrow">Explore closer to home</span><h1>Find work worth<br /><em>showing up for.</em></h1><p>Discover local companies, understand the role, and make your first move.</p></div><button className="mobile-filter-button" onClick={() => setFiltersOpen(true)}><SlidersHorizontal size={17} /> Filters{activeFilterCount > 0 && <span>{activeFilterCount}</span>}</button></div>
+              {storageWarning && <div className="storage-warning" role="status">Browser storage is unavailable. Changes will last only for this session.</div>}
+              {undo && !pendingDecision && <div className="undo-bar" role="status"><span><Check size={16} /> {undo.company.name} {undo.action === 'saved' ? 'saved' : 'passed'}</span><button onClick={() => restore(undo.company)}><RotateCcw size={15} /> Undo</button><button className="icon-button" onClick={() => setUndo(null)} aria-label="Dismiss undo"><X size={16} /></button></div>}
+              <div className="deck-area" aria-live="polite">
+                {discover.length > 1 && <div className="deck-card deck-card-back" aria-hidden="true" />}
+                {current ? <CompanyCard key={current.id} company={current} saved={saved.includes(current.id)} onSave={() => decide(current, 'saved')} onPass={() => decide(current, 'rejected')} onOpen={() => setSelected(current)} motion={motion} onMotionEnd={finishMotion} /> : <div className="empty-state deck-empty"><Search size={38} /><h2>No companies in this view</h2><p>{matching.length ? 'You have reviewed every matching company. Undo a decision, restore a passed company, or reset your filters.' : 'No researched companies match all these filters. Try widening your search.'}</p>{activeFilterCount > 0 && <Button onClick={() => setFilters(DEFAULT_FILTERS)}>Clear filters</Button>}</div>}
               </div>
-              <h1 tabIndex={-1}>
-                {view === 'resume' ? (
-                  <>
-                    Your story, <em>clearly told.</em>
-                  </>
-                ) : view === 'discover' ? (
-                  <>
-                    Big ideas.
-                    <br className="mobile-break" /> Close to home<span>.</span>
-                  </>
-                ) : view === 'saved' ? (
-                  <>
-                    Good things, <em>kept close.</em>
-                  </>
-                ) : (
-                  <>
-                    Room for <em>something else.</em>
-                  </>
-                )}
-              </h1>
-              <p>
-                {view === 'resume'
-                  ? 'A thoughtful workspace for the experience that makes you, you.'
-                  : view === 'discover'
-                    ? 'Meet the local companies building something worth being part of.'
-                    : view === 'saved'
-                      ? 'Your collection of possibilities. Come back when the time feels right.'
-                      : 'These companies stay out of Discover until you bring them back.'}
-              </p>
+              {current && <div className="swipe-controls"><button className="swipe-button pass-button" onClick={() => decide(current, 'rejected')} disabled={!!pendingDecision} aria-label={`Pass on ${current.name}`}><X size={25} /><span>Pass</span></button><div className="deck-progress"><strong>{Math.min(COMPANIES.length - discover.length + 1, COMPANIES.length)} <span>/ {COMPANIES.length}</span></strong><span>{discover.length} remaining{activeFilterCount ? ' in filter' : ''}</span></div><button className="swipe-button save-button" onClick={() => decide(current, 'saved')} disabled={!!pendingDecision} aria-label={`Save ${current.name}`}><Bookmark size={23} /><span>Save</span></button></div>}
+              {current && <p className="keyboard-hint"><ArrowLeft size={13} /> Swipe or use arrow keys <ArrowRight size={13} /></p>}
             </div>
-            <div className="intro-stamp" aria-hidden="true">
-              <Sprout size={24} strokeWidth={1.4} />
-              <span>
-                GROW
-                <br />
-                FROM HERE
-              </span>
-            </div>
-          </section>
+            <aside className="desktop-filters"><FilterPanel filters={filters} onChange={setFilters} /><div className="research-teaser"><FileText size={18} /><div><strong>Beyond the job boards</strong><p>Student programs and local founder resources are included too.</p><button onClick={() => setResearchOpen(true)}>Explore research notes <ArrowRight size={14} /></button></div></div></aside>
+          </div>
+        ) : view === 'saved' ? <Collection title="Saved for later" companies={savedCompanies} emptyTitle="Your shortlist starts here" emptyText="Save a company from Discover to keep its details, role snapshot, and outreach tools close." actionLabel="Remove from saved" onAction={removeSaved} onOpen={setSelected} /> : <Collection title="Passed companies" companies={passedCompanies} emptyTitle="Nothing passed yet" emptyText="Companies you pass will appear here so you can revisit or restore them." actionLabel="Restore to discover" onAction={restore} onOpen={setSelected} />}
+        <footer className="app-footer"><span>LaunchScout · Student opportunity discovery</span><span>Research data is a snapshot, not a guarantee of availability.</span></footer>
+      </main>
 
-          {view !== 'resume' && (
-            <div className="content-heading">
-              <div className="view-label">
-                <span className="live-dot" />
-                {view === 'discover'
-                  ? 'Your discovery deck'
-                  : view === 'saved'
-                    ? 'Your saved collection'
-                    : 'Your passed companies'}
-                <span className="count-pill">
-                  {view === 'discover'
-                    ? filtered.length
-                    : view === 'saved'
-                      ? saved.length
-                      : passed.length}
-                </span>
-              </div>
-              {view === 'discover' && (
-                <button
-                  className="filter-toggle"
-                  aria-expanded={showFilters}
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  <SlidersHorizontal size={15} />
-                  Filters{activeFilters > 0 && ` (${activeFilters})`}
-                </button>
-              )}
-              <span className="heading-note">A fresh perspective starts here.</span>
-            </div>
-          )}
-          {showFilters && view === 'discover' && (
-            <div className="mobile-filters">{filterControls}</div>
-          )}
-          {view === 'discover' && activeFilters > 0 && (
-            <div className="filter-chips">
-              {Object.entries(filters)
-                .filter(([, value]) => value)
-                .map(([key, value]) => (
-                  <button key={key} onClick={() => setFilter(key as keyof Filters, '')}>
-                    {value}
-                    <X size={13} />
-                    <span className="sr-only">Remove {key} filter</span>
-                  </button>
-                ))}
-              <button className="clear-filters" onClick={() => clearData('filters')}>
-                Reset filters
-              </button>
-            </div>
-          )}
+      <nav className="mobile-nav" aria-label="Mobile navigation">{navItems.map((item) => <button key={item.id} className={view === item.id ? 'active' : ''} onClick={() => changeView(item.id)} aria-current={view === item.id ? 'page' : undefined} aria-label={item.id === 'resume' ? 'Resume' : item.label}><item.icon size={20} /><span>{item.id === 'resume' ? 'Resume' : item.label}</span>{item.count !== undefined && item.count > 0 && <i>{item.count}</i>}</button>)}</nav>
 
-          {view === 'resume' ? (
-            <ResumeWorkspace
-              document={resume}
-              enabled={resumeEnabled}
-              onChange={setResume}
-              onEnabledChange={setResumeEnabled}
-            />
-          ) : view === 'discover' ? (
-            <div className="discovery-layout">
-              <section className="deck" aria-label="Company discovery deck">
-                {current ? (
-                  <>
-                    <article
-                      className={`company-card ${motion.dragX ? 'is-dragging' : ''}`}
-                      key={current.id}
-                      ref={motion.cardRef}
-                      style={
-                        motion.dragX
-                          ? {
-                              transform: `translateX(${motion.dragX}px) rotate(${motion.dragX / 18}deg)`,
-                            }
-                          : undefined
-                      }
-                    >
-                      {Math.abs(motion.dragX) > 25 && (
-                        <span
-                          className={`swipe-feedback ${motion.dragX > 0 ? 'save' : 'reject'}`}
-                          aria-hidden="true"
-                        >
-                          {motion.dragX > 0 ? 'KEEP' : 'PASS'}
-                        </span>
-                      )}
-                      <button
-                        className="card-open"
-                        aria-label={`View ${current.name} details`}
-                        onClick={() => {
-                          if (!suppressClick.current) setDetail(current);
-                          suppressClick.current = false;
-                        }}
-                        onPointerDown={motion.onPointerDown}
-                        onPointerMove={motion.onPointerMove}
-                        onPointerCancel={motion.reset}
-                        onPointerUp={(event) => {
-                          const action = motion.finish(event);
-                          if (action) {
-                            suppressClick.current = true;
-                            decide(current, action);
-                          }
-                        }}
-                        onKeyDown={(event) => {
-                          if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-                            event.preventDefault();
-                            decide(current, event.key === 'ArrowRight' ? 'save' : 'reject');
-                            requestAnimationFrame(() =>
-                              document
-                                .querySelector<HTMLButtonElement>(
-                                  '.card-open, .empty-state .primary-button',
-                                )
-                                ?.focus(),
-                            );
-                          }
-                        }}
-                      >
-                        <CompanyArt company={current} />
-                        <span className="card-art-badge">
-                          <MapPin size={13} />
-                          {current.city}, CA
-                        </span>
-                        <span className="sample-tag">{current.companyTypeLabel.toUpperCase()}</span>
-                        <div className="card-content">
-                          <div className="company-title-row">
-                            <span className={`company-logo ${current.color}`}>
-                              {current.initials}
-                              <span>↗</span>
-                            </span>
-                            <span className="industry-tag">{current.industry}</span>
-                            <ArrowUpRight className="details-arrow" size={22} />
-                          </div>
-                          <h2>{current.name}</h2>
-                          <p className="company-tagline">{current.tagline}</p>
-                          <p className="company-description">{current.description}</p>
-                          <div className="opportunity-tags">
-                            {current.opportunities.length ? (
-                              current.opportunities.map((type) => (
-                                <span key={type}>
-                                  <span />
-                                  {type}
-                                </span>
-                              ))
-                            ) : (
-                              <span>{formatRoleSearchStatus(current.roleSearch.status)}</span>
-                            )}
-                          </div>
-                          <div className="card-meta">
-                            <span>
-                              <ShieldCheck size={14} />
-                              Role check · {current.roleSearch.checkedAt}
-                            </span>
-                            <span>
-                              Explore company
-                              <ArrowRight size={14} />
-                            </span>
-                          </div>
-                        </div>
-                      </button>
-                    </article>
-                    <div className="deck-actions">
-                      <button
-                        className="action-circle undo-action"
-                        disabled={!undo}
-                        onClick={undoDecision}
-                        aria-label="Undo last action"
-                      >
-                        <RotateCcw size={20} />
-                      </button>
-                      <button className="pass-button" onClick={() => decide(current, 'reject')}>
-                        <X size={23} />
-                        <span>Pass for now</span>
-                      </button>
-                      <button className="save-button" onClick={() => decide(current, 'save')}>
-                        <Bookmark size={20} />
-                        <span>Save company</span>
-                      </button>
-                    </div>
-                    <p className="swipe-hint">
-                      Swipe left to pass, right to save. Or use the buttons above.
-                    </p>
-                    <p className="keyboard-hint">
-                      Focused on a card? Use <kbd>←</kbd> <kbd>→</kbd>
-                    </p>
-                  </>
-                ) : (
-                  <div className="empty-state">
-                    <span className="empty-icon">
-                      <CheckCheck size={34} />
-                    </span>
-                    <h2>
-                      {activeFilters
-                        ? 'No companies match just yet.'
-                        : 'You’ve explored the whole neighborhood.'}
-                    </h2>
-                    <p>
-                      {activeFilters
-                        ? 'Try a different city, industry, or opportunity. Passed companies stay hidden.'
-                        : 'Your saved companies are waiting for you. You can also bring passed companies back to your deck.'}
-                    </p>
-                    <button
-                      className="primary-button"
-                      onClick={() => (activeFilters ? clearData('filters') : setView('saved'))}
-                    >
-                      {activeFilters ? 'Reset filters' : 'Open saved companies'}
-                      <ArrowRight size={16} />
-                    </button>
-                    {undo && (
-                      <button className="text-button" onClick={undoDecision}>
-                        Undo last action
-                      </button>
-                    )}
-                  </div>
-                )}
-              </section>
-              <aside className="discovery-aside">
-                <div className="how-it-works">
-                  <span className="mini-eyebrow">SMALL STEPS, BIG POSSIBILITIES</span>
-                  <h2>
-                    Your next chapter
-                    <br />
-                    could be <em>right here.</em>
-                  </h2>
-                  <p>You don’t have to look far to find people working on something meaningful.</p>
-                  <div className="guide-step">
-                    <span>01</span>
-                    <div>
-                      <h3>Follow your curiosity</h3>
-                      <p>Open a card. Get to know the company behind the idea.</p>
-                    </div>
-                  </div>
-                  <div className="guide-step">
-                    <span>02</span>
-                    <div>
-                      <h3>Keep what clicks</h3>
-                      <p>Save the ones you like. Pass on the ones you don’t.</p>
-                    </div>
-                  </div>
-                  <div className="guide-step">
-                    <span>03</span>
-                    <div>
-                      <h3>Start a conversation</h3>
-                      <p>Make an outreach draft your own, then take it from there.</p>
-                    </div>
-                  </div>
-                  <div className="little-doodle" aria-hidden="true">
-                    <span />
-                    <Sprout size={63} strokeWidth={1} />
-                    <span />
-                  </div>
-                </div>
-                <div className="privacy-card">
-                  <ShieldCheck size={23} strokeWidth={1.5} />
-                  <div>
-                    <h3>Your search. Your space.</h3>
-                    <p>Saved companies and preferences stay in this browser. No account needed.</p>
-                    <button onClick={() => setPrivacy(true)}>
-                      You’re in control
-                      <ArrowUpRight size={13} />
-                    </button>
-                  </div>
-                </div>
-                {saved.length > 0 && (
-                  <button className="saved-teaser" onClick={() => setView('saved')}>
-                    <span className="saved-avatars">
-                      {saved.slice(0, 3).map((c) => (
-                        <span className={c.color} key={c.id}>
-                          {c.initials}
-                        </span>
-                      ))}
-                    </span>
-                    <span>
-                      {saved.length} {saved.length === 1 ? 'possibility' : 'possibilities'} saved
-                      <ArrowRight size={15} />
-                    </span>
-                  </button>
-                )}
-              </aside>
-            </div>
-          ) : (
-            <section
-              className="collection-grid"
-              aria-label={view === 'saved' ? 'Saved companies' : 'Passed companies'}
-            >
-              {(view === 'saved' ? saved : passed).map((company) => (
-                <article className="collection-card" key={company.id}>
-                  <button
-                    className="collection-open"
-                    onClick={() => setDetail(company)}
-                    aria-label={`View ${company.name} details`}
-                  >
-                    <CompanyArt company={company} compact />
-                    <div className="collection-content">
-                      <span className="mini-eyebrow">FICTIONAL · {company.city.toUpperCase()}</span>
-                      <h2>
-                        {company.name}
-                        <ArrowUpRight size={20} />
-                      </h2>
-                      <span className="industry-tag">{company.industry}</span>
-                      <p>{company.description}</p>
-                    </div>
-                  </button>
-                  <button className="collection-restore" onClick={() => restore(company)}>
-                    <RotateCcw size={15} />
-                    {view === 'saved' ? 'Remove from Saved' : 'Return to Discover'}
-                  </button>
-                </article>
-              ))}
-              {!(view === 'saved' ? saved : passed).length && (
-                <div className="empty-state">
-                  <span className="empty-icon">
-                    {view === 'saved' ? <Bookmark size={32} /> : <Compass size={32} />}
-                  </span>
-                  <h2>
-                    {view === 'saved' ? 'Your next possibility is out there.' : 'A clean slate.'}
-                  </h2>
-                  <p>
-                    {view === 'saved'
-                      ? 'Save a company from Discover and it’ll be waiting here.'
-                      : 'Companies you pass on will appear here. You can restore them anytime.'}
-                  </p>
-                  <button className="primary-button" onClick={() => setView('discover')}>
-                    Explore companies
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
-              )}
-            </section>
-          )}
-          <footer className="page-footer">
-            <span>Made for the possibility next door.</span>
-            <span>
-              <MapPin size={12} />
-              Central Valley, California
-            </span>
-          </footer>
-        </main>
-        <nav className="mobile-nav" aria-label="Mobile navigation">
-          {navItem('discover', 'Discover', Compass)}
-          {navItem('saved', 'Saved', Bookmark, saved.length)}
-          {navItem('passed', 'Passed', X, passed.length)}
-          {navItem('resume', 'Resume', FileText)}
-        </nav>
-      </div>
-      <div className="toast-region" aria-live="polite" aria-atomic="true">
-        {notice && (
-          <div className="toast">
-            <Check size={17} />
-            <span>{notice}</span>
-            {undo && <button onClick={undoDecision}>Undo</button>}
-            <button onClick={() => setNotice('')} aria-label="Dismiss notification">
-              <X size={16} />
-            </button>
-          </div>
-        )}
-      </div>
-      {detail && (
-        <CompanyDetails
-          company={detail}
-          onClose={() => setDetail(null)}
-          isSaved={preferences.saved.includes(detail.id)}
-          onSave={() => decide(detail, 'save')}
-        />
-      )}
-      {privacy && (
-        <Modal title="Your data belongs to you." onClose={() => setPrivacy(false)}>
-          <div className="privacy-intro">
-            <ShieldCheck size={30} />
-            <p>
-              No account. No tracking. Your saved companies, passed company IDs, and city, industry,
-              and opportunity filters, plus your theme choice, are stored only in this browser’s
-              local storage.
-            </p>
-          </div>
-          <p className="modal-copy">
-            Company preferences stay local. Outreach drafts exist only while their company dialog is
-            open and are discarded when it closes. Opening an email draft hands its current subject
-            and body, plus a listed public company email when available, to your default email app.
-            LaunchScout does not read your inbox or send the message. Copying a draft puts it on
-            your device’s clipboard. Clearing browser data also clears your preferences. They do not
-            sync between devices. Resume files are read in your browser and their text stays in
-            session memory until deleted or reloaded. Only an explicit AI cleanup request sends the
-            extracted text through the local server to OpenAI. Provider retention may apply.
-          </p>
-          <div className="privacy-controls">
-            <PrivacyRow
-              title="Resume content"
-              description={
-                resume
-                  ? 'One resume in session memory'
-                  : resumeEnabled
-                    ? 'Workspace enabled; no resume imported'
-                    : 'No resume content stored'
-              }
-              onClear={() => clearData('resume')}
-              disabled={!resumeEnabled && !resume}
-            />
-            <PrivacyRow
-              title="Saved companies"
-              description={`${saved.length} ${saved.length === 1 ? 'company' : 'companies'} in your collection`}
-              onClear={() => clearData('saved')}
-              disabled={!saved.length}
-            />
-            <PrivacyRow
-              title="Passed companies"
-              description={`${passed.length} hidden from your discovery deck`}
-              onClear={() => clearData('rejected')}
-              disabled={!passed.length}
-            />
-            <PrivacyRow
-              title="Filter preferences"
-              description={`${activeFilters} active ${activeFilters === 1 ? 'filter' : 'filters'}`}
-              onClear={() => clearData('filters')}
-              disabled={!activeFilters}
-            />
-            <PrivacyRow
-              title="Appearance preference"
-              description={`${preferences.theme === 'dark' ? 'Dark' : 'Light'} theme`}
-              onClear={() => clearData('theme')}
-              disabled={preferences.theme === 'light'}
-            />
-          </div>
-          <button
-            className="danger-button"
-            disabled={
-              !saved.length &&
-              !passed.length &&
-              !activeFilters &&
-              preferences.theme === 'light' &&
-              !resumeEnabled &&
-              !resume
-            }
-            onClick={() => clearData('all')}
-          >
-            <Trash2 size={16} />
-            Clear all local data
-          </button>
-          <p className="fine-print">
-            Resume text is never put in browser storage. There are no analytics or automatic emails.
-            Downloaded files and clipboard copies must be deleted on your device separately. Opening
-            an external source link will visit that website.
-          </p>
-        </Modal>
-      )}
-      {about && (
-        <Modal title="Opportunity, a little closer." onClose={() => setAbout(false)}>
-          <div className="about-art">
-            <Sprout size={55} strokeWidth={1.2} />
-          </div>
-          <p className="modal-copy">
-            LaunchScout helps you discover startups and employers across Kern County, save the ones
-            that spark your curiosity, and start thoughtful conversations.
-          </p>
-          <div className="sample-callout">
-            <strong>These listings come from a dated research snapshot.</strong>
-            <p>
-              The report was checked on {datasetInfo.sourceSnapshotDate}. Open each source before
-              applying; openings, requirements, and contact routes may have changed since then.
-            </p>
-          </div>
-          <p className="modal-copy">
-            Company cards, internship programs, and ecosystem resources are kept as separate record
-            types. Potential skill fit is a LaunchScout assessment, not an employer promise or job
-            requirement.
-          </p>
-          <a
-            className="external-link"
-            href="https://github.com/GaelCT/LaunchScout/issues/2"
-            target="_blank"
-            rel="noreferrer"
-          >
-            View the project on GitHub
-            <ExternalLink size={15} />
-          </a>
-        </Modal>
-      )}
+      {selected && <CompanyDetails company={selected} onClose={() => setSelected(null)} />}
+      {filtersOpen && <div className="dialog-backdrop mobile-sheet-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setFiltersOpen(false)}><section className="mobile-sheet" role="dialog" aria-modal="true" aria-label="Discovery filters"><FilterPanel filters={filters} onChange={setFilters} onClose={() => setFiltersOpen(false)} mobile /></section></div>}
+      {researchOpen && <div className="dialog-backdrop mobile-sheet-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setResearchOpen(false)}><section className="research-drawer" role="dialog" aria-modal="true" aria-label="Research notes"><ResearchPanel onClose={() => setResearchOpen(false)} /></section></div>}
+      {privacyOpen && <PrivacyDialog onClose={() => setPrivacyOpen(false)} onClear={clearData} />}
     </div>
-  );
-}
-
-function FilterSelect({
-  label,
-  value,
-  options,
-  allLabel,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  options: string[];
-  allLabel: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="filter-field">
-      <span>{label}</span>
-      <span className="select-wrap">
-        <select
-          aria-label={`Filter by ${label.toLowerCase()}`}
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-        >
-          <option value="">{allLabel}</option>
-          {options.map((option) => (
-            <option key={option}>{option}</option>
-          ))}
-        </select>
-        <ChevronDown size={14} />
-      </span>
-    </label>
-  );
-}
-
-function PrivacyRow({
-  title,
-  description,
-  onClear,
-  disabled,
-}: {
-  title: string;
-  description: string;
-  onClear: () => void;
-  disabled: boolean;
-}) {
-  return (
-    <div className="privacy-row">
-      <div>
-        <h3>{title}</h3>
-        <p>{description}</p>
-      </div>
-      <button disabled={disabled} onClick={onClear} aria-label={`Clear ${title.toLowerCase()}`}>
-        Clear
-        <Trash2 size={14} />
-      </button>
-    </div>
-  );
-}
-
-function formatOpeningStatus(status: string): string {
-  if (status === 'open_at_snapshot') return 'Listed open at report check';
-  if (status === 'open_reported_verify_live') return 'Reported active; verify on employer site';
-  if (status === 'closed_at_snapshot') return 'Closed at report check';
-  return status.replaceAll('_', ' ');
-}
-
-type OutreachGoal = 'internship' | 'coffee_chat' | 'desired_role';
-
-function createOutreachDraft(company: Company, goal: OutreachGoal, desiredRole: string) {
-  const focus = company.industry;
-  const greeting = `Hello ${company.name} team,`;
-  const signoff = `Thank you for your time,\n[Your name]`;
-  if (goal === 'internship') {
-    return {
-      subject: `Student internship inquiry — ${company.name}`,
-      body: `${greeting}\n\nI’m a student interested in your work in ${focus}. I’m reaching out to ask whether your team anticipates internship opportunities suitable for students. I’d be glad to share more about my background if useful.\n\n${signoff}`,
-    };
-  }
-  if (goal === 'coffee_chat') {
-    return {
-      subject: `Coffee chat request — ${company.name}`,
-      body: `${greeting}\n\nI came across your work in ${focus}. Would someone on your team be open to a brief 15-minute coffee chat? I’d value the chance to learn more about your work and what skills students should develop for this field.\n\n${signoff}`,
-    };
-  }
-  const role = desiredRole.trim() || '[role you are interested in]';
-  return {
-    subject: desiredRole.trim()
-      ? `Interest in ${desiredRole.trim()} — ${company.name}`
-      : `Role inquiry — ${company.name}`,
-    body: `${greeting}\n\nI’m a student interested in pursuing ${role} opportunities. I came across your work in ${focus} and would appreciate learning whether my background could be relevant to your team.\n\n${signoff}`,
-  };
-}
-
-function getVerifiedPublicEmail(contact: string | null): string | null {
-  if (!contact?.toLowerCase().startsWith('mailto:')) return null;
-  const recipient = contact.slice('mailto:'.length).split('?')[0];
-  let decoded: string;
-  try {
-    decoded = decodeURIComponent(recipient).trim();
-  } catch {
-    return null;
-  }
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(decoded) ? decoded : null;
-}
-
-function createMailtoHref(recipient: string | null, subject: string, body: string): string {
-  const to = recipient ? encodeURIComponent(recipient) : '';
-  const safeSubject = subject.replace(/[\r\n]+/g, ' ').trim();
-  const safeBody = body.replace(/\r?\n/g, '\r\n');
-  return `mailto:${to}?subject=${encodeURIComponent(safeSubject)}&body=${encodeURIComponent(safeBody)}`;
-}
-
-function CompanyDetails({
-  company,
-  onClose,
-  isSaved,
-  onSave,
-}: {
-  company: Company;
-  onClose: () => void;
-  isSaved: boolean;
-  onSave: () => void;
-}) {
-  const [tab, setTab] = useState<'overview' | 'outreach'>('overview');
-  const [goal, setGoal] = useState<OutreachGoal>('internship');
-  const [desiredRole, setDesiredRole] = useState('');
-  const initialDraft = createOutreachDraft(company, 'internship', '');
-  const [subject, setSubject] = useState(initialDraft.subject);
-  const [body, setBody] = useState(initialDraft.body);
-  const [copyStatus, setCopyStatus] = useState('');
-  const publicEmail = getVerifiedPublicEmail(company.publicLinks.contact);
-  const mailtoHref = createMailtoHref(publicEmail, subject, body);
-
-  function applyOutreachChoices() {
-    const draft = createOutreachDraft(company, goal, desiredRole);
-    setSubject(draft.subject);
-    setBody(draft.body);
-    setCopyStatus(
-      'Draft updated from your selections. Review and edit it before opening your email app.',
-    );
-  }
-
-  async function copyDraft() {
-    const recipientLine = publicEmail ? `To: ${publicEmail}\n` : '';
-    try {
-      await navigator.clipboard.writeText(`${recipientLine}Subject: ${subject}\n\n${body}`);
-      setCopyStatus('Draft copied. Review it before using.');
-    } catch {
-      setCopyStatus('Clipboard unavailable. Select and copy the text manually.');
-    }
-  }
-  return (
-    <Modal title={company.name} onClose={onClose} wide>
-      <div className="detail-subtitle">
-        <MapPin size={15} />
-        {company.city}, {company.localConnection.state}
-        <span>·</span>
-        {company.industry}
-        <span className="sample-tag-inline">{company.companyTypeLabel}</span>
-      </div>
-      <div
-        className="detail-tabs"
-        role="tablist"
-        aria-label="Company information"
-        onKeyDown={(event) => {
-          if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-            event.preventDefault();
-            const next =
-              event.key === 'Home'
-                ? 'overview'
-                : event.key === 'End'
-                  ? 'outreach'
-                  : tab === 'overview'
-                    ? 'outreach'
-                    : 'overview';
-            setTab(next);
-            document.getElementById(`${next}-tab`)?.focus();
-          }
-        }}
-      >
-        <button
-          id="overview-tab"
-          role="tab"
-          tabIndex={tab === 'overview' ? 0 : -1}
-          aria-selected={tab === 'overview'}
-          aria-controls="overview-panel"
-          onClick={() => setTab('overview')}
-        >
-          Company overview
-        </button>
-        <button
-          id="outreach-tab"
-          role="tab"
-          tabIndex={tab === 'outreach' ? 0 : -1}
-          aria-selected={tab === 'outreach'}
-          aria-controls="outreach-panel"
-          onClick={() => setTab('outreach')}
-        >
-          Outreach draft
-          <ArrowUpRight size={14} />
-        </button>
-      </div>
-      {tab === 'overview' ? (
-        <div id="overview-panel" role="tabpanel" aria-labelledby="overview-tab">
-          <CompanyArt company={company} compact />
-          <h3 className="detail-tagline">{company.tagline}</h3>
-          <p className="modal-copy">{company.description}</p>
-          {company.localConnection.note && (
-            <p className="modal-copy">{company.localConnection.note}</p>
-          )}
-          <div className="stats-grid">
-            <div>
-              <span>Founded / launched</span>
-              <strong>{company.founded ?? 'Not reported'}</strong>
-            </div>
-            <div>
-              <span>Team size</span>
-              <strong>{company.team ?? 'Not reported'}</strong>
-            </div>
-            <div>
-              <span>Role information checked</span>
-              <strong className="stat-text">{company.roleSearch.checkedAt}</strong>
-            </div>
-          </div>
-          <h3 className="detail-section-title">Potential skill fit</h3>
-          <p className="modal-copy">{company.potentialStudentFit.note}</p>
-          <div className="opportunity-tags">
-            {company.potentialStudentFit.skillAreas.map((skill) => (
-              <span key={skill}>{skill}</span>
-            ))}
-          </div>
-          <h3 className="detail-section-title">Role status</h3>
-          <p className="modal-copy">
-            <strong>{formatRoleSearchStatus(company.roleSearch.status)}</strong>
-            <br />
-            {company.roleSearch.note}
-          </p>
-          <h3 className="detail-section-title">Roles in the research snapshot</h3>
-          {company.openings.length ? (
-            company.openings.map((opening) => (
-              <div className="role-snapshot" key={opening.id}>
-                <h4>{opening.title}</h4>
-                <p>
-                  {formatOpeningStatus(opening.status)}
-                  {opening.location ? ` · ${opening.location}` : ''}
-                  {opening.studentSuitability
-                    ? ` · ${opening.studentSuitability.replaceAll('_', ' ')}`
-                    : ''}
-                </p>
-                {opening.educationRequirements && <p>Education: {opening.educationRequirements}</p>}
-                {opening.experienceRequirements && (
-                  <p>Experience: {opening.experienceRequirements}</p>
-                )}
-                {opening.skills.length > 0 && <p>Skills: {opening.skills.join(', ')}</p>}
-                {opening.workArrangement && (
-                  <p>Schedule / arrangement: {opening.workArrangement}</p>
-                )}
-                {opening.pay && (
-                  <p>
-                    Pay: ${opening.pay.min.toLocaleString()}–${opening.pay.max.toLocaleString()}{' '}
-                    {opening.pay.currency} per {opening.pay.period}
-                    {opening.pay.verification === 'aggregator_reported_unconfirmed'
-                      ? ' (aggregator-reported; confirm with employer)'
-                      : ''}
-                  </p>
-                )}
-                {opening.citizenshipOrClearance && (
-                  <p>Citizenship / clearance: {opening.citizenshipOrClearance}</p>
-                )}
-                {opening.notes && <p>{opening.notes}</p>}
-                {opening.applicationUrl && (
-                  <a
-                    className="external-link"
-                    href={opening.applicationUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    View role / application
-                    <ExternalLink size={14} />
-                  </a>
-                )}
-              </div>
-            ))
-          ) : (
-            <p className="modal-copy">No specific role is listed in this research snapshot.</p>
-          )}
-          {company.studentPrograms.length > 0 && (
-            <>
-              <h3 className="detail-section-title">Student programs</h3>
-              {company.studentPrograms.map((program, index) => (
-                <p className="modal-copy" key={index}>
-                  {String(program.name)} — {String(program.status).replaceAll('_', ' ')}.
-                  {program.location ? ` ${String(program.location)}.` : ''}
-                </p>
-              ))}
-            </>
-          )}
-          <h3 className="detail-section-title">Sources</h3>
-          {company.sources.length ? (
-            company.sources.map((source) => (
-              <a
-                key={source.url}
-                className="external-link"
-                href={source.url}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {source.label} · checked {source.checkedAt}
-                <ExternalLink size={14} />
-              </a>
-            ))
-          ) : (
-            <p className="modal-copy">No source links are recorded for this listing.</p>
-          )}
-          {company.publicLinks.contact && (
-            <a
-              className="external-link"
-              href={company.publicLinks.contact}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Public contact route
-              <ExternalLink size={14} />
-            </a>
-          )}
-          <div className="modal-actions">
-            <button className="secondary-button" disabled={isSaved} onClick={onSave}>
-              {isSaved ? <Check size={17} /> : <Bookmark size={17} />}
-              {isSaved ? 'Saved to your collection' : 'Save company'}
-            </button>
-            <button className="primary-button" onClick={() => setTab('outreach')}>
-              Make an outreach draft
-              <ArrowRight size={16} />
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div id="outreach-panel" role="tabpanel" aria-labelledby="outreach-tab">
-          <div className="draft-note">
-            <ShieldCheck size={19} />
-            <p>
-              This editable draft uses the company information above. Confirm the contact route and
-              review every detail before sending; LaunchScout will not send it for you.
-            </p>
-          </div>
-          <div className="draft-goal-controls">
-            <label className="draft-label">
-              Outreach goal
-              <select
-                value={goal}
-                onChange={(event) => {
-                  setGoal(event.target.value as OutreachGoal);
-                  setCopyStatus('');
-                }}
-              >
-                <option value="internship">Internship inquiry</option>
-                <option value="coffee_chat">Coffee chat</option>
-                <option value="desired_role">Ask about a specific role</option>
-              </select>
-            </label>
-            {goal === 'desired_role' && (
-              <label className="draft-label">
-                Role you’re interested in
-                <input
-                  maxLength={120}
-                  placeholder="For example, backend engineering intern"
-                  value={desiredRole}
-                  onChange={(event) => {
-                    setDesiredRole(event.target.value);
-                    setCopyStatus('');
-                  }}
-                />
-              </label>
-            )}
-            <button className="secondary-button" type="button" onClick={applyOutreachChoices}>
-              Apply choices to draft
-            </button>
-            <p className="draft-contact-note">
-              Applying choices replaces the current subject and message. You can edit both
-              afterward.
-            </p>
-          </div>
-          <label className="draft-label">
-            Subject
-            <input
-              value={subject}
-              onChange={(event) => {
-                setSubject(event.target.value);
-                setCopyStatus('');
-              }}
-            />
-          </label>
-          <label className="draft-label">
-            Your message
-            <textarea
-              rows={13}
-              value={body}
-              onChange={(event) => {
-                setBody(event.target.value);
-                setCopyStatus('');
-              }}
-            />
-          </label>
-          <p className="draft-contact-note">
-            {publicEmail
-              ? `Verified public company email: ${publicEmail}.`
-              : 'No verified public company email is listed; the recipient field will be blank.'}{' '}
-            If your email app does not open or the draft is not transferred, use Copy draft. The app
-            never sends the message, and resume information is not added.
-          </p>
-          <div className="draft-footer">
-            <span>
-              <ShieldCheck size={14} />
-              Draft stays here until you close this dialog.
-            </span>
-            <div className="draft-actions">
-              <a className="primary-button mailto-button" href={mailtoHref}>
-                <Mail size={16} />
-                Open email draft
-              </a>
-              <button className="secondary-button" onClick={copyDraft}>
-                <Copy size={16} />
-                Copy draft
-              </button>
-            </div>
-          </div>
-          <p className="copy-status" role="status">
-            {copyStatus}
-          </p>
-        </div>
-      )}
-    </Modal>
   );
 }
