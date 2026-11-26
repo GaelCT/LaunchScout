@@ -152,7 +152,7 @@ Outreach tests cover all three goals, retaining edits until choices are applied,
 
 The standalone parser has Python unit tests covering PDF/DOCX/TXT/Markdown extraction, formatting, invalid inputs, limits, output protection, and the CLI. They run with socket creation disabled to catch accidental network use. Run them after installing the optional PDF dependency with `python -m unittest discover -s tests/python -v`.
 
-GitHub Actions runs formatting checks, the production build, the Python parser tests, and the browser tests on pushes and pull requests, including the development rendering-security suite. To run the separate production rendering-security check locally:
+GitHub Actions runs formatting checks, the production build, the Python parser tests, and the browser tests on pushes and pull requests, including the development and production rendering-security suites. To run the separate production rendering-security check locally:
 
 ```sh
 npm run build

@@ -646,6 +646,7 @@ h1 + p {
 }
 .card-content {
   padding: 0 27px 0;
+  overflow-wrap: anywhere;
 }
 .company-title-row {
   display: flex;
@@ -1162,6 +1163,7 @@ kbd {
 }
 .modal {
   border: 1px solid #dce2d3;
+  overflow-wrap: anywhere;
   border-radius: 14px;
   padding: 28px;
   max-width: 520px;
