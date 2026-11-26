@@ -1,6 +1,6 @@
 # LaunchScout project status
 
-Updated November 17, 2026. This report describes the implementation in this branch; an open pull request does not mean the changes have been merged into `main`.
+Updated November 25, 2026. This report describes the implementation in this branch; an open pull request does not mean the changes have been merged into `main`.
 
 ## Current state
 
@@ -52,7 +52,8 @@ Google, GitHub, passkeys, and email links are placeholders only. No OAuth or oth
 ## Validation
 
 - Production TypeScript/Vite build and Prettier formatting checks.
-- 72 Playwright checks across desktop and an emulated phone viewport in Chromium: 22 discovery/theme/privacy checks, 8 mailto outreach checks, 8 JSON research checks, 20 resume checks, and 14 login-preview checks. Coverage includes the dated JSON snapshot, source links, role requirements and closed status, combined filters, legacy preference cleanup, guest continuity, local resume extraction, consent, cancellation/deletion, and safe preview rendering. Outreach checks cover recipient selection, edited subject/body encoding, all three goals, preserved edits, copying and denied-clipboard fallback.
+- 82 Playwright checks across desktop and an emulated phone viewport in Chromium: 22 discovery/theme/privacy checks, 8 mailto outreach checks, 8 JSON research checks, 20 resume checks, 14 login-preview checks, and 10 rendering-security checks. Coverage includes the dated JSON snapshot, source links, role requirements and closed status, combined filters, legacy preference cleanup, guest continuity, local resume extraction, consent, cancellation/deletion, and safe preview rendering. Security fixtures cover malicious company records, imported and AI-generated Markdown, warnings, filenames, provider errors, outreach drafts, unsafe URL schemes, external requests, and new-tab protections. Outreach checks cover recipient selection, edited subject/body encoding, all three goals, preserved edits, copying and denied-clipboard fallback.
+- A separate production-preview run exercises 8 applicable rendering-security checks on desktop and mobile. The synthetic company data-module fixture runs against the development server and is skipped in that production run; pure URL-policy checks still run in both.
 - 17 Python parser unit tests with socket creation disabled, plus a command-line conversion of the fictional PDF.
 - AI browser responses are mocked; no live LLM factual-quality, cost, latency, or refusal evaluation has been performed.
 - Phone viewport checks are not a Safari/WebKit compatibility claim. GitHub Actions results must be checked after the branch is pushed.

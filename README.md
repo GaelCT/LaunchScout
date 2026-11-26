@@ -128,6 +128,14 @@ Privacy controls clear saved IDs, passed IDs, filters, the appearance preference
 
 There is no telemetry, analytics, external font request, or automatic email sending. The optional resume cleanup endpoint is the only AI integration. The app fetches its own static assets; GitHub, provider-policy links, and future public source links visit third-party sites only when opened. A future hosting provider may maintain its own request logs.
 
+## Rendering and URL safety
+
+Original extraction, imported filenames, AI warnings and errors, company descriptions, role details, and outreach drafts are rendered as React text or editable form values, never as raw HTML. The resume reading preview uses `react-markdown` with raw HTML skipped, images suppressed, links converted to inert text, so URLs, images, and HTML never become active elements. This applies equally to imported and AI-generated Markdown. The app does not fetch or preview URLs found in a resume.
+
+Company records are sanitized at the data boundary in `src/data.ts` with the helpers in `src/urls.ts`, before any component can render their URLs. Source, application, website, and careers links pass through `safeExternalUrl`. Only absolute HTTPS URLs are clickable; executable schemes, data/file URLs, protocol-relative or malformed URLs, embedded credentials, control characters, and oversized values are rejected. Accepted URLs are normalized by the browser URL parser. Invalid application and contact routes are omitted, and sources with invalid URLs are excluded from the rendered record. Public contact routes allow the same HTTPS policy or a validated single-recipient `mailto:` address; any supplied mail headers are discarded. New-tab links use `noreferrer`, which withholds the LaunchScout referrer and also severs the opener reference in supported browsers. Resume or AI text is never added to company source URLs. Outreach subject and body text is placed only in a user-initiated, editable `mailto:` draft.
+
+Downloaded Markdown is still untrusted content when opened in another application; its external renderer may follow different rules. Deployment-level Content Security Policy and HTTP security headers are tracked separately under issue #15.
+
 ## Research data and maintenance
 
 The reviewed snapshot is stored in `src/research-data/kern-county.json`; `src/data.ts` maps company records into the card interface, and `src/storage.ts` validates saved company IDs and filters against the dataset. Stable company IDs preserve saved and passed selections when records are updated.
@@ -138,10 +146,15 @@ Before treating the directory as current, assign a listing reviewer, establish a
 
 ## Verification
 
-Playwright runs the same user flows on desktop and an emulated iPhone viewport using Chromium: persistence and privacy resets, filters and rejection exclusion, edited draft copying and disposal, missing-source disclosures, undo and restoration, an exhausted deck, malformed/blocked storage, swipe and keyboard actions, theme persistence, viewport overflow, and dialog focus restoration. Resume tests cover actual PDF/DOCX extraction using fictional fixtures, editing, preview safety, reviewed downloads, consent, deletion during a pending AI request, and server rejection of unconsented/cross-origin submissions. Login tests cover validation, keyboard/focus behavior, password visibility and cleanup, loading/cancellation, no auth requests or persisted credentials, inactive providers, themes, and guest workflow continuity. AI success/error responses are mocked; no live provider request or factual-output quality evaluation is performed by the tests. This is mobile layout testing, not a Safari/WebKit compatibility claim.
+Playwright runs the same user flows on desktop and an emulated iPhone viewport using Chromium: persistence and privacy resets, filters and rejection exclusion, edited draft copying and disposal, missing-source disclosures, undo and restoration, an exhausted deck, malformed/blocked storage, swipe and keyboard actions, theme persistence, viewport overflow, and dialog focus restoration. Resume tests cover actual PDF/DOCX extraction using fictional fixtures, editing, preview safety, reviewed downloads, consent, deletion during a pending AI request, and server rejection of unconsented/cross-origin submissions. Login tests cover validation, keyboard/focus behavior, password visibility and cleanup, loading/cancellation, no auth requests or persisted credentials, inactive providers, themes, and guest workflow continuity. Security tests use synthetic company records, imported Markdown, AI responses, warnings, filenames, errors, and outreach payloads to assert that active content does not execute, load external resources, or become clickable. URL-policy cases cover unsafe and disguised schemes, malformed URLs, embedded credentials, normalized HTTPS links, and public contact routes. AI success/error responses are mocked; no live provider request or factual-output quality evaluation is performed by the tests. This is mobile layout testing, not a Safari/WebKit compatibility claim.
 
 Outreach tests cover all three goals, retaining edits until choices are applied, public/blank recipients, Unicode and reserved-character encoding, clipboard copying and denied-clipboard fallback. The dialog-reset regression checks the current default template while retaining research-date checks in company details. Opening a native email app remains a manual platform check.
 
 The standalone parser has Python unit tests covering PDF/DOCX/TXT/Markdown extraction, formatting, invalid inputs, limits, output protection, and the CLI. They run with socket creation disabled to catch accidental network use. Run them after installing the optional PDF dependency with `python -m unittest discover -s tests/python -v`.
 
-GitHub Actions runs formatting checks, the production build, the Python parser tests, and the browser tests on pushes and pull requests.
+GitHub Actions runs formatting checks, the production build, the Python parser tests, and the browser tests on pushes and pull requests, including the development and production rendering-security suites. To run the separate production rendering-security check locally:
+
+```sh
+npm run build
+npm run test:security:production
+```
