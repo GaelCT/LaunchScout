@@ -1,22 +1,16 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { createResumeApi } from './server/resumeApi';
 
-export default defineConfig(({ mode }) => {
-  const env = { ...loadEnv(mode, process.cwd(), ''), ...process.env };
-  const api = createResumeApi({ apiKey: env.OPENAI_API_KEY, model: env.OPENAI_MODEL });
-  return {
-    plugins: [
-      react(),
-      {
-        name: 'local-resume-api',
-        configureServer(server) {
-          server.middlewares.use(api);
-        },
-        configurePreviewServer(server) {
-          server.middlewares.use(api);
-        },
-      },
-    ],
-  };
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+    proxy: { '/api': `http://127.0.0.1:${process.env.API_PORT ?? 3001}` },
+  },
+  preview: {
+    host: '127.0.0.1',
+    proxy: { '/api': `http://127.0.0.1:${process.env.API_PORT ?? 3001}` },
+  },
 });

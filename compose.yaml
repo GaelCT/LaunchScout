@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: launchscout
+      POSTGRES_USER: launchscout_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a local database password}
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - launchscout_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U launchscout_owner -d launchscout']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - '127.0.0.1:1025:1025'
+      - '127.0.0.1:8025:8025'
+volumes:
+  launchscout_postgres:

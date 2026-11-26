@@ -243,9 +243,13 @@ test('untrusted company records expose only safe links and keep drafts editable'
     }),
   );
   await page.goto('/');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+    page.viewportSize()!.width,
+  );
   await page.getByRole('button', { name: /^View Security Fixture/ }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog).toContainText('Fictional description');
+  expect(await dialog.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
   await expect(dialog).not.toContainText('Unsafe source');
   await expect(dialog.getByRole('link', { name: 'View role / application' })).toHaveCount(0);
   await expect(dialog.getByRole('link', { name: 'Public contact route' })).toHaveCount(0);

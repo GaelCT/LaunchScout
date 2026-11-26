@@ -3,101 +3,173 @@ import type { FormEvent, ReactNode } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
-  Bookmark,
-  Check,
-  Compass,
   Eye,
   EyeOff,
-  Fingerprint,
   Github,
-  KeyRound,
   LoaderCircle,
   LockKeyhole,
-  Mail,
   ShieldCheck,
-  Sparkles,
   Sprout,
 } from 'lucide-react';
-import { mockAuthAdapter } from './auth';
-import type { AuthAdapter } from './auth';
+import { authClient } from './auth';
+import type { Session } from './auth';
 import './login.css';
 
-interface LoginPageProps {
-  brand: ReactNode;
-  themeToggle: ReactNode;
-  onBack: () => void;
-  adapter?: AuthAdapter;
-}
-type Phase = 'idle' | 'loading' | 'preview' | 'error';
-
+type Mode =
+  'login' | 'register' | 'recover' | 'verify' | 'reset' | 'account' | 'password' | 'delete';
 export function LoginPage({
   brand,
   themeToggle,
   onBack,
-  adapter = mockAuthAdapter,
-}: LoginPageProps) {
+  session,
+}: {
+  brand: ReactNode;
+  themeToggle: ReactNode;
+  onBack: () => void;
+  session: Session | null;
+}) {
+  const pending = authClient.pendingAction();
+  const [mode, setMode] = useState<Mode>(pending?.purpose ?? (session ? 'account' : 'login'));
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [nextPassword, setNextPassword] = useState('');
   const [visible, setVisible] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-  const [phase, setPhase] = useState<Phase>('idle');
-  const emailRef = useRef<HTMLInputElement>(null);
-  const passwordRef = useRef<HTMLInputElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const statusRef = useRef<HTMLDivElement>(null);
-  const requestRef = useRef<AbortController | null>(null);
-
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [configured, setConfigured] = useState<boolean | null>(null);
+  const [emailEnabled, setEmailEnabled] = useState(false);
+  const request = useRef<AbortController | null>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const result = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    headingRef.current?.focus();
-    return () => requestRef.current?.abort();
+    heading.current?.focus();
+    const abort = new AbortController();
+    void fetch('/api/auth/config', { signal: abort.signal })
+      .then((r) => r.json())
+      .then((value) => {
+        if (!abort.signal.aborted) {
+          setConfigured(value.configured === true);
+          setEmailEnabled(value.emailEnabled === true);
+        }
+      })
+      .catch(() => {
+        if (!abort.signal.aborted) setConfigured(false);
+      });
+    return () => {
+      abort.abort();
+      request.current?.abort();
+    };
   }, []);
   useEffect(() => {
-    if (phase === 'preview' || phase === 'error') statusRef.current?.focus();
-  }, [phase]);
-
+    if (message || error) result.current?.focus();
+  }, [message, error]);
+  function switchMode(next: Mode) {
+    request.current?.abort();
+    request.current = null;
+    setMode(next);
+    setPassword('');
+    setNextPassword('');
+    setVisible(false);
+    setError('');
+    setMessage('');
+    setBusy(false);
+    if (next !== 'verify' && next !== 'reset') authClient.clearAction();
+  }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (requestRef.current) return;
-    const next: typeof errors = {};
-    if (!email.trim()) next.email = 'Enter a fictional email address to try the preview.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
-      next.email = 'Use an email format like you@example.com.';
-    if (!password) next.password = 'Enter a made-up password for this preview.';
-    setErrors(next);
-    setPhase('idle');
-    if (next.email || next.password) {
-      if (next.email) emailRef.current?.focus();
-      else passwordRef.current?.focus();
+    if (request.current || !configured) return;
+    setError('');
+    setMessage('');
+    if (
+      ['login', 'register', 'recover'].includes(mode) &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    ) {
+      setError('Enter a valid email address.');
+      return;
+    }
+    if (['login', 'register', 'password', 'delete', 'reset'].includes(mode) && !password) {
+      setError('Enter your password.');
+      return;
+    }
+    const newValue = mode === 'password' ? nextPassword : password;
+    if (
+      ['register', 'reset', 'password'].includes(mode) &&
+      (newValue.length < 15 || newValue.length > 128)
+    ) {
+      setError('Use a password of 15–128 characters.');
       return;
     }
     const controller = new AbortController();
-    requestRef.current = controller;
-    setPhase('loading');
+    request.current = controller;
+    setBusy(true);
     setVisible(false);
     try {
-      await adapter.signIn({ email: email.trim(), password }, { signal: controller.signal });
-      if (!controller.signal.aborted) setPhase('preview');
-    } catch {
-      if (!controller.signal.aborted) setPhase('error');
+      if (mode === 'login') await authClient.signIn(email.trim(), password, controller.signal);
+      else if (mode === 'register') {
+        const reply = await authClient.register(email.trim(), password, controller.signal);
+        setMessage(reply.message);
+      } else if (mode === 'recover') {
+        const reply = await authClient.requestLink('reset', email.trim(), controller.signal);
+        setMessage(reply.message);
+      } else if (mode === 'verify' || mode === 'reset') {
+        if (!pending) throw new Error('Open a fresh email link to continue.');
+        const reply = await authClient.confirm(mode, pending.token, password, controller.signal);
+        setMessage(reply.message);
+      } else if (mode === 'password') {
+        await authClient.changePassword(password, nextPassword, controller.signal);
+        setMessage('Password changed. Sign in again.');
+        setMode('login');
+      } else if (mode === 'delete') await authClient.deleteAccount(password, controller.signal);
+    } catch (failure) {
+      if (!controller.signal.aborted)
+        setError(failure instanceof Error ? failure.message : 'The request could not finish.');
     } finally {
-      requestRef.current = null;
       if (!controller.signal.aborted) {
-        setEmail('');
         setPassword('');
-        setVisible(false);
+        setNextPassword('');
+        setEmail('');
+        setBusy(false);
+        request.current = null;
       }
     }
   }
-  function sampleDetails() {
-    setEmail('alex@example.com');
-    setPassword('demo-only-password');
-    setErrors({});
-    setPhase('idle');
-    setVisible(false);
-    emailRef.current?.focus();
+  async function accountAction(kind: 'logout' | 'verify') {
+    const controller = new AbortController();
+    request.current = controller;
+    setBusy(true);
+    setError('');
+    try {
+      if (kind === 'logout') await authClient.signOut();
+      else {
+        const reply = await authClient.requestLink(
+          'verify',
+          session!.user.email,
+          controller.signal,
+        );
+        setMessage(reply.message);
+      }
+    } catch (failure) {
+      if (!controller.signal.aborted)
+        setError(failure instanceof Error ? failure.message : 'Try again later.');
+    } finally {
+      if (!controller.signal.aborted) {
+        setBusy(false);
+        request.current = null;
+      }
+    }
   }
-  const loading = phase === 'loading';
-
+  const titles: Record<Mode, string> = {
+    login: 'Welcome back.',
+    register: 'Make yourself at home.',
+    recover: 'Find your way back.',
+    verify: 'Verify your email.',
+    reset: 'Choose a new password.',
+    account: 'Your LaunchScout account.',
+    password: 'Change your password.',
+    delete: 'Delete your account.',
+  };
+  const passwordField = ['login', 'register', 'reset', 'password', 'delete'].includes(mode);
   return (
     <div className="login-page">
       <header className="login-header">
@@ -124,204 +196,250 @@ export function LoginPage({
               <br />
               starts <em>close to home.</em>
             </h2>
-            <p>
-              Big ideas have local roots. Find the companies, people, and possibilities worth
-              getting to know.
-            </p>
+            <p>Find the companies, people, and possibilities worth getting to know.</p>
           </div>
           <div className="login-illustration" aria-hidden="true">
-            <span className="login-art-ring ring-a" />
-            <span className="login-art-ring ring-b" />
-            <span className="login-art-dot dot-a" />
-            <span className="login-art-dot dot-b" />
             <span className="login-compass">
-              <Compass size={83} strokeWidth={1} />
+              <Sprout size={85} strokeWidth={1} />
             </span>
-            <span className="login-art-spark">✳</span>
-            <div className="login-floating-card idea-card">
-              <span>
-                <Sprout size={21} strokeWidth={1.3} />
-              </span>
-              <div>
-                <b>Something good is growing.</b>
-                <small>Your neighborhood has possibilities.</small>
-              </div>
-            </div>
-            <div className="login-floating-card bookmark-card">
-              <Bookmark size={18} />
-              <span>A little curiosity goes a long way.</span>
-              <Check size={13} />
-            </div>
           </div>
           <div className="login-story-bottom">
-            <span className="login-local-stamp">
-              <Sprout size={20} />
-              <span>
-                GROW
-                <br />
-                FROM HERE
-              </span>
-            </span>
+            <ShieldCheck size={24} />
             <p>
-              Discover something meaningful.
+              Guest discovery and local resume editing
               <br />
-              <em>One local connection at a time.</em>
+              <em>are always available.</em>
             </p>
           </div>
         </section>
         <section className="login-form-section" aria-labelledby="login-title">
           <div className="login-form-content">
-            <span className="login-preview-pill">
-              <Sparkles size={12} />
-              SIGN-IN PREVIEW
-            </span>
-            <h1 id="login-title" ref={headingRef} tabIndex={-1}>
-              A good place
-              <br />
-              to come back to<span>.</span>
+            <h1 id="login-title" ref={heading} tabIndex={-1}>
+              {titles[mode]}
             </h1>
-            <p className="login-subtitle">
-              A familiar face. A fresh possibility.
-              <br />
-              Your LaunchScout account will start here.
+            <p className="login-input-hint">
+              Account changes clear private session content. Download any resume edits you want to
+              keep first.
             </p>
-            <div className="login-preview-notice">
-              <ShieldCheck size={19} />
-              <p>
-                <strong>Try the page with fictional details.</strong> This preview doesn’t create an
-                account or sign you in. Your inputs aren’t sent or saved.
-              </p>
-            </div>
-            <form
-              className="login-form"
-              onSubmit={(event) => void submit(event)}
-              noValidate
-              autoComplete="off"
-              aria-label="Sign-in preview"
-            >
-              <label htmlFor="login-email">Email address</label>
-              <div className={`login-input-wrap ${errors.email ? 'invalid' : ''}`}>
-                <Mail size={17} />
-                <input
-                  ref={emailRef}
-                  id="login-email"
-                  name="preview-email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="off"
-                  placeholder="you@example.com"
-                  maxLength={254}
-                  disabled={loading}
-                  value={email}
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={errors.email ? 'login-email-error' : undefined}
-                  onChange={(event) => {
-                    setEmail(event.target.value);
-                    setErrors((previous) => ({ ...previous, email: undefined }));
-                    setPhase('idle');
-                  }}
-                />
-              </div>
-              {errors.email && (
-                <p id="login-email-error" className="login-field-error">
-                  {errors.email}
+            {configured === false && (
+              <div className="login-preview-notice" role="status">
+                <ShieldCheck size={19} />
+                <p>
+                  Account service is unavailable. You can keep exploring and edit your resume
+                  locally.
                 </p>
-              )}
-              <div className="login-password-label">
-                <label htmlFor="login-password">Password</label>
-                <button type="button" className="login-soon-link" disabled>
-                  Forgot password? <span>Later</span>
-                </button>
               </div>
-              <div className={`login-input-wrap ${errors.password ? 'invalid' : ''}`}>
-                <LockKeyhole size={17} />
-                <input
-                  ref={passwordRef}
-                  id="login-password"
-                  name="preview-password"
-                  type={visible ? 'text' : 'password'}
-                  autoComplete="off"
-                  placeholder="Use a made-up password"
-                  maxLength={256}
-                  disabled={loading}
-                  value={password}
-                  aria-invalid={Boolean(errors.password)}
-                  aria-describedby={
-                    errors.password ? 'login-password-error' : 'login-password-hint'
-                  }
-                  onChange={(event) => {
-                    setPassword(event.target.value);
-                    setErrors((previous) => ({ ...previous, password: undefined }));
-                    setPhase('idle');
-                  }}
-                />
+            )}
+            {mode === 'account' && session ? (
+              <div className="account-details">
+                <p>
+                  <strong>{session.user.email}</strong>
+                </p>
+                <p>
+                  {session.user.emailVerified ? 'Email verified' : 'Email verification required'}
+                </p>
+                <p>
+                  {session.user.aiEnabled
+                    ? 'AI access enabled'
+                    : 'AI access requires operator approval'}
+                </p>
+                {!session.user.emailVerified && (
+                  <button
+                    className="login-submit"
+                    disabled={busy || !emailEnabled}
+                    onClick={() => void accountAction('verify')}
+                  >
+                    Send verification email
+                  </button>
+                )}
                 <button
-                  type="button"
-                  className="login-reveal"
-                  disabled={loading}
-                  aria-label={visible ? 'Hide password' : 'Show password'}
-                  aria-pressed={visible}
-                  onClick={() => setVisible(!visible)}
+                  className="secondary-button"
+                  disabled={busy}
+                  onClick={() => switchMode('password')}
                 >
-                  {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+                  Change password
+                </button>
+                <button
+                  className="secondary-button"
+                  disabled={busy}
+                  onClick={() => void accountAction('logout')}
+                >
+                  Sign out
+                </button>
+                <button
+                  className="text-button"
+                  disabled={busy}
+                  onClick={() => switchMode('delete')}
+                >
+                  Delete account
                 </button>
               </div>
-              {errors.password ? (
-                <p id="login-password-error" className="login-field-error">
-                  {errors.password}
-                </p>
-              ) : (
-                <p id="login-password-hint" className="login-input-hint">
-                  This is a demo. Please don’t use a real password.
-                </p>
-              )}
-              <button className="login-submit" type="submit" disabled={loading}>
-                {loading ? (
+            ) : (
+              <form
+                className="login-form"
+                onSubmit={(event) => void submit(event)}
+                noValidate
+                aria-label={titles[mode]}
+              >
+                {['login', 'register', 'recover'].includes(mode) && (
                   <>
-                    <LoaderCircle className="spin" size={17} />
-                    Trying the preview…
-                  </>
-                ) : (
-                  <>
-                    Preview sign in
-                    <ArrowRight size={17} />
+                    <label htmlFor="login-email">Email address</label>
+                    <div className="login-input-wrap">
+                      <input
+                        id="login-email"
+                        type="email"
+                        autoComplete="email"
+                        maxLength={254}
+                        disabled={busy || !configured}
+                        value={email}
+                        aria-invalid={Boolean(error)}
+                        aria-describedby={error ? 'auth-result' : undefined}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          setError('');
+                        }}
+                      />
+                    </div>
                   </>
                 )}
-              </button>
-              <button
-                type="button"
-                className="login-sample"
-                disabled={loading}
-                onClick={sampleDetails}
-              >
-                Use example details
-              </button>
-            </form>
-            {(phase === 'preview' || phase === 'error') && (
+                {passwordField && (
+                  <>
+                    <label htmlFor="login-password">
+                      {mode === 'password' || mode === 'delete'
+                        ? 'Current password'
+                        : mode === 'reset'
+                          ? 'New password'
+                          : 'Password'}
+                    </label>
+                    <div className="login-input-wrap">
+                      <input
+                        id="login-password"
+                        type={visible ? 'text' : 'password'}
+                        autoComplete={
+                          ['register', 'reset'].includes(mode) ? 'new-password' : 'current-password'
+                        }
+                        maxLength={128}
+                        disabled={busy || !configured}
+                        value={password}
+                        aria-invalid={Boolean(error)}
+                        aria-describedby={error ? 'auth-result' : undefined}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          setError('');
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="login-reveal"
+                        disabled={busy}
+                        aria-label={visible ? 'Hide password' : 'Show password'}
+                        aria-pressed={visible}
+                        onClick={() => setVisible(!visible)}
+                      >
+                        {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+                      </button>
+                    </div>
+                  </>
+                )}
+                {mode === 'password' && (
+                  <>
+                    <label htmlFor="new-password">New password</label>
+                    <div className="login-input-wrap">
+                      <input
+                        id="new-password"
+                        type="password"
+                        autoComplete="new-password"
+                        maxLength={128}
+                        disabled={busy}
+                        value={nextPassword}
+                        aria-invalid={Boolean(error)}
+                        aria-describedby={error ? 'auth-result' : undefined}
+                        onChange={(e) => {
+                          setNextPassword(e.target.value);
+                          setError('');
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
+                {['register', 'reset', 'password'].includes(mode) && (
+                  <p className="login-input-hint">
+                    Use 15–128 characters. A long, unique passphrase works well.
+                  </p>
+                )}
+                {mode === 'verify' && <p>Confirm this email address to finish verification.</p>}
+                {mode === 'delete' && (
+                  <p>
+                    Your account and active sessions will be removed. Download any session resume
+                    you want to keep first. Provider or backup retention may still apply.
+                  </p>
+                )}
+                <button
+                  className="login-submit"
+                  type="submit"
+                  disabled={
+                    busy || !configured || (['register', 'recover'].includes(mode) && !emailEnabled)
+                  }
+                >
+                  {busy ? (
+                    <>
+                      <LoaderCircle className="spin" size={17} />
+                      Working…
+                    </>
+                  ) : mode === 'login' ? (
+                    'Sign in'
+                  ) : mode === 'register' ? (
+                    'Create account'
+                  ) : mode === 'recover' ? (
+                    'Send reset link'
+                  ) : mode === 'verify' ? (
+                    'Verify email'
+                  ) : mode === 'reset' ? (
+                    'Reset password'
+                  ) : mode === 'delete' ? (
+                    'Confirm account deletion'
+                  ) : (
+                    'Update password'
+                  )}
+                </button>
+              </form>
+            )}
+            {(message || error) && (
               <div
-                className={`login-result ${phase}`}
-                ref={statusRef}
+                ref={result}
+                id="auth-result"
                 tabIndex={-1}
-                role={phase === 'error' ? 'alert' : 'status'}
+                className={`login-result ${error ? 'error' : 'preview'}`}
+                role={error ? 'alert' : 'status'}
               >
-                {phase === 'preview' ? (
-                  <>
-                    <Check size={18} />
-                    <p>
-                      <strong>Preview complete. You’re still browsing as a guest.</strong> Real
-                      sign-in isn’t connected yet. The email and password fields have been cleared.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck size={18} />
-                    <p>
-                      <strong>The preview couldn’t finish.</strong> Your fields have been cleared.
-                      You can try again or continue as a guest.
-                    </p>
-                  </>
-                )}
+                {error || message}
               </div>
+            )}
+            {mode === 'login' && (
+              <div className="account-links">
+                <button
+                  className="text-button"
+                  disabled={busy || !emailEnabled}
+                  onClick={() => switchMode('register')}
+                >
+                  Create an account
+                </button>
+                <button
+                  className="text-button"
+                  disabled={busy || !emailEnabled}
+                  onClick={() => switchMode('recover')}
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+            {mode !== 'login' && mode !== 'account' && (
+              <button
+                className="text-button"
+                onClick={() => switchMode(session ? 'account' : 'login')}
+              >
+                Back to {session ? 'account' : 'sign in'}
+              </button>
             )}
             <div className="login-divider">
               <span />
@@ -330,9 +448,7 @@ export function LoginPage({
             </div>
             <div className="login-provider-options" aria-label="Future OAuth providers">
               <button disabled type="button">
-                <span className="provider-google" aria-hidden="true">
-                  G
-                </span>
+                <span className="provider-google">G</span>
                 <span>Google</span>
                 <small>Planned</small>
               </button>
@@ -343,27 +459,15 @@ export function LoginPage({
               </button>
             </div>
             <div className="login-other-methods">
-              <span>
-                <Fingerprint size={14} />
-                Passkeys
-              </span>
-              <span>
-                <KeyRound size={14} />
-                Email link
-              </span>
+              <span>Passkeys</span>
+              <span>Email links</span>
               <small>Possible future options</small>
             </div>
             <p className="login-provider-note">
               Provider options are placeholders. No provider is connected.
             </p>
-            <div className="login-create-account">
-              <span>New around here?</span>
-              <button disabled>
-                Create an account <small>Coming later</small>
-              </button>
-            </div>
             <button className="login-guest" onClick={onBack}>
-              Keep exploring as a guest
+              Keep exploring{session ? '' : ' as a guest'}
               <ArrowRight size={15} />
             </button>
             <p className="login-guest-note">
@@ -375,7 +479,8 @@ export function LoginPage({
       <footer className="login-footer">
         <span>Made for the possibility next door.</span>
         <span>
-          <LockKeyhole size={11} />A local preview. No credentials stored.
+          <LockKeyhole size={11} />
+          Passwords and private keys never enter browser storage.
         </span>
       </footer>
     </div>
