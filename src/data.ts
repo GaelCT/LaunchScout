@@ -1,4 +1,5 @@
 import researchData from './research-data/kern-county.json';
+import { safeExternalUrl, safePublicContactUrl } from './urls';
 
 export type Opportunity = 'Internship' | 'Full-time' | 'Technical role';
 
@@ -157,6 +158,19 @@ export const companies: Company[] = dataset.companies.map((record) => {
     color: colorFor(industries),
     initials: initials(record.name),
     verificationDate: record.roleSearch.checkedAt,
+    publicLinks: {
+      website: safeExternalUrl(record.publicLinks.website),
+      careers: safeExternalUrl(record.publicLinks.careers),
+      contact: safePublicContactUrl(record.publicLinks.contact),
+    },
+    openings: record.openings.map((opening) => ({
+      ...opening,
+      applicationUrl: safeExternalUrl(opening.applicationUrl),
+    })),
+    sources: record.sources.flatMap((source) => {
+      const url = safeExternalUrl(source.url);
+      return url ? [{ ...source, url }] : [];
+    }),
   };
 });
 
